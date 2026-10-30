@@ -2,10 +2,12 @@
 
 **Find the show. Find the cinema. Make a night of it.**
 
+[![CI](https://github.com/damnalee/filmup/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/damnalee/filmup/actions/workflows/ci.yml)
+
 FilmUp is a Lahore-focused cinema discovery experience. It brings cinema locations, movie listings and upcoming showtimes into one interactive map, with email alerts for advance-booking openings on selected upcoming films.
 
 <p align="center">
-  <img src="docs/screenshots/filmup-home.jpg" alt="FilmUp running locally — interactive Lahore cinema map and movie discovery interface" width="100%" />
+  <img src="docs/screenshots/filmup-map.jpg" alt="FilmUp interactive 3D map of Lahore with cinema locations and movie ribbons" width="100%" />
 </p>
 
 <p align="center">
@@ -22,24 +24,34 @@ FilmUp is a Lahore-focused cinema discovery experience. It brings cinema locatio
 
 FilmUp is a discovery and notification product. It does not sell tickets or guarantee that a cinema's external booking page has seats available.
 
-## Launch video
+## Product screens
 
-[![Watch the FilmUp launch video](brag-output/brag.jpg)](brag-output/brag.mp4)
+The screenshots below are captures of the real FilmUp interface running locally. They show the current product flow rather than mockups.
 
-[Watch the 20-second FilmUp launch video](brag-output/brag.mp4) · [Share caption](brag-output/share-copy.txt) · [Audio and asset credits](brag-output/CREDITS.md)
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/filmup-cinemas-list.jpg" alt="FilmUp cinema directory showing Lahore venues and their next listed showtimes" width="100%" />
+      <p><strong>Cinema directory</strong><br />Browse supported Lahore cinemas, compare their areas and ratings, and see the next listed session.</p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/filmup-cue-showtimes.jpg" alt="CUE Cinemas detail panel with currently listed movies and showtimes" width="100%" />
+      <p><strong>CUE Cinemas and showtimes</strong><br />Open a venue on the map to review its movie listings and available showtime information.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/filmup-upcoming-dune.jpg" alt="Dune Part Three movie details marked coming soon in FilmUp" width="100%" />
+      <p><strong>Upcoming movies</strong><br />View a coming-soon title such as <em>Dune: Part Three</em>, even before cinemas publish sessions.</p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/filmup-advance-booking-alert.jpg" alt="FilmUp advance-booking alert form with email and cinema choices" width="100%" />
+      <p><strong>Advance-booking alerts</strong><br />Choose an email address and the cinemas to watch. FilmUp sends a confirmation email before alerts are activated.</p>
+    </td>
+  </tr>
+</table>
 
-The launch film was produced with the [latent-spaces/brag](https://github.com/latent-spaces/brag) workflow and Hyperframes. Its source storyboard and editable composition are included in `brag-output/`.
-
-## Product preview
-
-| Experience | What it helps with |
-|---|---|
-| Interactive cinema map | Find supported venues and explore Lahore areas |
-| Movie discovery | Search current and upcoming catalogue entries |
-| Showtime details | Review future sessions and follow source booking links |
-| Advance-booking alerts | Get notified after confirming an email subscription |
-
-The screenshot above was captured from the running local application. Live listings can change as cinema sources and the scraper update.
+The map and product screens were captured on 30 October 2026. Movie catalogues, release information and showtimes are live data and can change after these screenshots are taken.
 
 ## Architecture
 
@@ -126,10 +138,11 @@ npm run typecheck
 npm run build
 ```
 
-For backend syntax verification:
+For backend syntax verification and unit tests:
 
 ```bash
 python -m compileall -q backend
+python -m unittest discover -s backend -p 'test_*.py' -v
 ```
 
 ## Documentation
@@ -168,6 +181,8 @@ The catalogue API is the source of truth for movie/showtime data. The frontend i
 FilmUp is an actively developed project. Cinema websites can change their markup or APIs, and a source may temporarily fail or publish incomplete information. Treat the cinema's own booking page as authoritative before travelling or purchasing tickets.
 
 The current backend starts the scraper schedule inside the FastAPI process. A host that sleeps or restarts free services cannot guarantee scheduled scraping or five-minute alert checks. Some free hosts also block outbound SMTP. See [deployment limitations](docs/DEPLOYMENT.md) before using a free tier for real notifications.
+
+The scraper monitoring endpoint (`/api/monitoring/scraper`) exposes operational run history. Put it behind administrator authentication or an access-controlled gateway before exposing a deployed backend publicly.
 
 ## License
 
