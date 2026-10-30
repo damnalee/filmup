@@ -36,7 +36,7 @@ FilmUp is a discovery and notification product. It does not sell tickets or guar
 
 These are captures of the actual FilmUp interface running locally, not design mockups.
 
-### Lahore map with cinema locations
+### Lahore cinema mapping
 
 The main view combines cinema markers on the map with a visible directory of supported venues and the movie ribbons along the bottom. It is designed to make the cinema options visible together instead of making people inspect each venue separately.
 
@@ -56,7 +56,7 @@ The main view combines cinema markers on the map with a visible directory of sup
   <img src="docs/screenshots/filmup-cue-showtimes.jpg" alt="CUE Cinemas detail panel in FilmUp showing movie listings and showtime information" width="100%" />
 </p>
 
-### Dune: Part Three — coming soon and booking alerts
+### Upcoming movie details and advance booking alert
 
 This single view shows the upcoming movie details and its advance-booking alert form together. A user can enter an email address, select the cinemas to watch, and confirm the subscription. FilmUp then checks for matching future sessions and emails the user when booking opens at a selected cinema.
 
