@@ -15,7 +15,7 @@ This guide sets up FilmUp on macOS, Linux or Windows with Node.js and Python ins
 Optional services:
 
 - Groq API key for the `/chat` endpoint.
-- SMTP provider credentials for subscription confirmation and notification emails.
+- Resend API key and an allowed sender address for subscription confirmation and notification emails.
 
 ## Repository layout
 
@@ -70,11 +70,9 @@ Fill in `backend/.env`:
 | `LOG_LEVEL` | Optional | Python logging level |
 | `TIMEZONE` | Optional | Defaults to `Asia/Karachi` |
 | `CORS_ALLOWED_ORIGINS` | Production | Comma-separated frontend origins, without trailing slash |
-| `SMTP_HOST` | For email | SMTP host; defaults to Gmail SMTP |
-| `SMTP_PORT` | For email | SMTP port; defaults to 587 |
-| `SMTP_EMAIL` | For email | Sender mailbox |
-| `SMTP_PASSWORD` | For email | App password/provider credential; keep secret |
-| `SMTP_SENDER_NAME` | Optional | Sender display name |
+| `RESEND_API_KEY` | For email | Resend API key; keep secret |
+| `MAIL_FROM_EMAIL` | For email | Sender address allowed by Resend; the test sender is restricted to your Resend account email |
+| `MAIL_FROM_NAME` | Optional | Sender display name |
 | `SCRAPER_ENABLED` | Optional | Enables scheduler when `true` |
 | `SCRAPER_SCHEDULE_MINUTE` | Optional | Minute within the configured hour; default `5` |
 | `SCRAPER_INTERVAL_HOURS` | Optional | Hour cadence; default `1` |
@@ -115,7 +113,7 @@ VITE_API_PROXY_TARGET=http://127.0.0.1:8000
 - `VITE_CINEMA_API_URL` is the API base path used by browser requests.
 - `VITE_API_PROXY_TARGET` is read by Vite's local development proxy only.
 - For local development, leave the API base as `/api`; Vite forwards it to FastAPI.
-- For a separately hosted frontend, set `VITE_CINEMA_API_URL` to the public backend origin plus `/api`, and add the frontend origin to backend `CORS_ALLOWED_ORIGINS`.
+- For a separately hosted frontend, set `VITE_CINEMA_API_URL` to the public API origin plus `/api`. The Cloudflare Worker uses `CORS_ALLOWED_ORIGINS` in `cloudflare/worker/wrangler.jsonc`; a separately hosted FastAPI backend uses the backend environment variable.
 
 Open `http://127.0.0.1:5173`.
 
@@ -158,10 +156,9 @@ A manual scrape can make real changes to Supabase. Use it deliberately and inspe
 
 ### Email confirmation fails
 
-- Verify SMTP host, port, sender and app password.
-- For Gmail, use an App Password, not the normal account password.
-- Check the hosting provider's outbound SMTP policy.
-- Confirm the recipient's inbox and spam folder.
+- Verify `RESEND_API_KEY` and that `MAIL_FROM_EMAIL` is an allowed sender in Resend.
+- Resend's `onboarding@resend.dev` test sender can only send to the email address registered with that Resend account. Verify a domain to send to other recipients.
+- Check Resend's email logs and the recipient's inbox and spam folder. An accepted API request is not proof of inbox delivery.
 
 ### Scheduler is not running
 

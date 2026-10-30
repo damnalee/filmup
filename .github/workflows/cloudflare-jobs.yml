@@ -1,0 +1,62 @@
+name: Cloudflare scheduled backend jobs
+
+on:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: Scheduled FilmUp job to run
+        required: true
+        type: choice
+        options:
+          - scrape
+          - advance_booking_check
+
+permissions:
+  contents: read
+
+concurrency:
+  group: filmup-cloudflare-${{ inputs.job }}
+  cancel-in-progress: false
+
+jobs:
+  run-job:
+    name: Run ${{ inputs.job }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      SCRAPER_MONITOR_STORAGE: supabase
+      SCRAPER_ENABLED: 'false'
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      MAIL_FROM_EMAIL: ${{ secrets.MAIL_FROM_EMAIL }}
+      MAIL_FROM_NAME: FilmUp Notifications
+      ADVANCE_BOOKING_DRY_RUN: 'true'
+      TIMEZONE: Asia/Karachi
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r backend/requirements.txt
+      - name: Validate required secrets
+        run: |
+          test -n "$SUPABASE_URL" || (echo 'Missing repository secret SUPABASE_URL' >&2; exit 1)
+          test -n "$SUPABASE_KEY" || (echo 'Missing repository secret SUPABASE_KEY' >&2; exit 1)
+      - name: Run full cinema scraper
+        if: inputs.job == 'scrape'
+        run: python backend/cloud_jobs.py scrape
+      - name: Validate Resend sender secrets for live delivery
+        if: inputs.job == 'advance_booking_check' && env.ADVANCE_BOOKING_DRY_RUN != 'true'
+        run: |
+          test -n "$RESEND_API_KEY" || (echo 'Missing repository secret RESEND_API_KEY' >&2; exit 1)
+          test -n "$MAIL_FROM_EMAIL" || (echo 'Missing repository secret MAIL_FROM_EMAIL' >&2; exit 1)
+      - name: Run five-minute advance-booking alert checker
+        if: inputs.job == 'advance_booking_check'
+        run: python backend/cloud_jobs.py advance_booking_check

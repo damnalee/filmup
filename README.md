@@ -47,7 +47,7 @@ The main view combines cinema markers on the map with a visible directory of sup
 ### Browse the cinema directory
 
 <p align="center">
-  <img src="docs/screenshots/filmup-cinemas-list.jpg" alt="FilmUp directory of Lahore cinemas with areas, ratings and next listed sessions" width="100%" />
+  <img src="docs/screenshots/filmup-cinemas-showtimes.jpg" alt="FilmUp directory of Lahore cinemas with areas, ratings and next listed sessions" width="100%" />
 </p>
 
 ### Cinemas and its showtime details
@@ -70,17 +70,15 @@ The screenshots were captured on 30 October 2026. Movie catalogues, release info
 
 ```mermaid
 flowchart LR
-    U[Visitor] --> FE[React + Vite frontend]
-    FE --> API[FastAPI backend]
+    U[Visitor] --> FE[React + Vite on Cloudflare Pages]
+    FE --> API[TypeScript API on Cloudflare Workers]
     API --> DB[(Supabase PostgreSQL)]
-    SCR[Cinema source collectors] --> DB
-    API --> AI[Groq chat service]
-    API --> MAIL[SMTP email delivery]
-    API --> SCHED[APScheduler]
-    SCHED --> SCR
-    SCHED --> ALERT[Advance-booking checker]
-    ALERT --> DB
-    ALERT --> MAIL
+    CRON[Cloudflare Cron Triggers] --> DISPATCH[GitHub Actions dispatch]
+    DISPATCH --> SCR[Existing Python cinema scraper]
+    DISPATCH --> CHECK[Five-minute booking check · dry run]
+    SCR --> DB
+    CHECK --> DB
+    API --> MAIL[Resend transactional email]
 ```
 
 The frontend and backend are maintained in one repository. The React app is at the repository root; the Python API is in `backend/`.
@@ -92,11 +90,11 @@ The frontend and backend are maintained in one repository. The React app is at t
 | Frontend | React 19, TypeScript, Vite 8, Tailwind CSS 4 |
 | Map | MapLibre GL, React Map GL, Supercluster |
 | UI motion | Framer Motion |
-| API | FastAPI, Uvicorn, Pydantic |
+| API edge | TypeScript Cloudflare Worker; full FastAPI backend remains available locally |
 | Data | Supabase (PostgreSQL) |
-| Collection | Python, HTTPX/aiohttp, BeautifulSoup, APScheduler |
+| Collection | Python, HTTPX/aiohttp, BeautifulSoup, GitHub Actions runner |
 | AI assistant service | Groq SDK (backend endpoint; separate from the map UI) |
-| Email | SMTP with a Gmail app password or another compatible SMTP provider |
+| Email | Resend HTTPS API for subscription confirmation; scheduled booking alerts default to dry-run |
 
 ## Quick start
 
@@ -108,7 +106,7 @@ See the full [local setup guide](docs/SETUP.md). In short:
 - Python 3.12 (recommended; see `backend/.python-version`)
 - A Supabase project with the FilmUp catalogue tables
 - Groq API key for the optional chat endpoint
-- SMTP credentials for advance-booking confirmation and alert emails
+- Resend API key and an allowed sender address for advance-booking confirmation emails
 
 ### 2. Configure the backend
 
@@ -120,7 +118,7 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Edit `backend/.env` and set the Supabase URL/key. Set Groq and SMTP values if you use those services. Never commit `.env`.
+Edit `backend/.env` and set the Supabase URL/key. Set the Groq and Resend values if you use those services. Never commit `.env`.
 
 ### 3. Start the API
 
@@ -193,7 +191,7 @@ The catalogue API is the source of truth for movie/showtime data. The frontend i
 
 FilmUp is an actively developed project. Cinema websites can change their markup or APIs, and a source may temporarily fail or publish incomplete information. Treat the cinema's own booking page as authoritative before travelling or purchasing tickets.
 
-The current backend starts the scraper schedule inside the FastAPI process. A host that sleeps or restarts free services cannot guarantee scheduled scraping or five-minute alert checks. Some free hosts also block outbound SMTP. See [deployment limitations](docs/DEPLOYMENT.md) before using a free tier for real notifications.
+The Cloudflare Worker dispatches scheduled Python jobs to GitHub Actions. The five-minute advance-booking checker defaults to dry-run mode and does not send booking alerts until live delivery is explicitly enabled. The full FastAPI backend can also run locally, but do not run its in-process scheduler alongside the Cloudflare/GitHub schedule.
 
 The scraper monitoring endpoint (`/api/monitoring/scraper`) exposes operational run history. Put it behind administrator authentication or an access-controlled gateway before exposing a deployed backend publicly.
 

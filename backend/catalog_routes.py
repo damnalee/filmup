@@ -210,6 +210,22 @@ def list_movies(
     return {"count": min(len(movies), limit), "movies": movies[:limit]}
 
 
+@router.get("/api/showtimes")
+def list_showtimes(
+    limit: int = Query(default=2000, ge=1, le=5000),
+):
+    """Return future source showtime rows for the shared browser-side data adapter."""
+    now = datetime.now(timezone.utc)
+    rows = database_rows(
+        supabase.table("showtimes")
+        .select("movie_title,cinema_name,showtime,booking_link,ticket_price")
+        .gte("showtime", now.isoformat())
+        .order("showtime")
+        .limit(limit)
+    )
+    return {"count": len(rows), "showtimes": rows}
+
+
 @router.get("/api/movies/{movie_id}")
 def get_movie(movie_id: str):
     """Get one catalogue entry, its release information, and confirmed future sessions."""

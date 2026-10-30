@@ -37,3 +37,8 @@ backend/logs/
 brag-output/composition/.hyperframes/
 brag-output/composition/node_modules/
 brag-output/brag-draft.mp4
+
+# Cloudflare local secrets and generated state
+cloudflare/worker/.dev.vars*
+!cloudflare/worker/.dev.vars.example
+**/.wrangler/

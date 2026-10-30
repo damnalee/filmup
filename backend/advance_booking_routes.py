@@ -5,11 +5,8 @@ import logging
 import os
 import re
 import secrets
-import smtplib
 import unicodedata
 from datetime import datetime, timedelta, timezone
-from email.message import EmailMessage
-from email.utils import formataddr
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, HTTPException, Request
@@ -17,6 +14,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 from database import supabase
+from email_service import resend_config, send_resend_email
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/advance-booking", tags=["advance-booking"])
@@ -30,31 +28,13 @@ class AdvanceBookingSubscriptionRequest(BaseModel):
     cinema_names: list[str] = Field(min_length=1, max_length=20)
 
 
-def _smtp_config():
-    host = os.getenv("SMTP_HOST", "smtp.gmail.com").strip()
-    port = int(os.getenv("SMTP_PORT", "587"))
-    sender = os.getenv("SMTP_EMAIL", "").strip()
-    password = os.getenv("SMTP_PASSWORD", "").replace(" ", "").strip()
-    sender_name = os.getenv("SMTP_SENDER_NAME", "FilmUp Notifications").strip()
-    if not sender or not password:
-        raise RuntimeError("SMTP_EMAIL and SMTP_PASSWORD must be configured in the backend environment.")
-    return host, port, sender, password, sender_name
+def _email_config():
+    return resend_config()
 
 
 def _send_email(to_email: str, subject: str, plain_text: str, html_body: str):
-    host, port, sender, password, sender_name = _smtp_config()
-    message = EmailMessage()
-    message["Subject"] = subject
-    message["From"] = formataddr((sender_name, sender))
-    message["To"] = to_email
-    message.set_content(plain_text)
-    message.add_alternative(html_body, subtype="html")
-    with smtplib.SMTP(host, port, timeout=25) as smtp:
-        smtp.ehlo()
-        smtp.starttls()
-        smtp.ehlo()
-        smtp.login(sender, password)
-        smtp.send_message(message)
+    return send_resend_email(to_email, subject, plain_text, html_body)
+
 
 
 def _clean_email(value: str) -> str:
@@ -182,7 +162,7 @@ def subscribe_to_advance_booking(payload: AdvanceBookingSubscriptionRequest, req
         raise HTTPException(status_code=422, detail="A cinema name is too long.")
 
     try:
-        _smtp_config()
+        _email_config()
     except Exception as exc:
         logger.error("Advance-booking email is not configured: %s", exc)
         raise HTTPException(status_code=503, detail="Email notifications are not configured yet.") from exc
@@ -275,8 +255,16 @@ def confirm_advance_booking(token: str):
     )
 
 
-def check_advance_booking_notifications(subscription_id: str | None = None) -> int:
-    """Send one alert per selected cinema when matching future showtime slots appear."""
+def check_advance_booking_notifications(
+    subscription_id: str | None = None,
+    *,
+    dry_run: bool = False,
+) -> int:
+    """Detect new selected-cinema slots and optionally send one alert per cinema.
+
+    Cloud jobs default to dry-run mode. Dry runs never send mail or mark cinemas
+    notified; live delivery requires an explicit deployment opt-in.
+    """
     query = (
         supabase.table("advance_booking_subscriptions")
         .select("id,email,movie_title,cinema_names,notified_cinemas")
@@ -287,6 +275,7 @@ def check_advance_booking_notifications(subscription_id: str | None = None) -> i
     subscriptions = query.limit(500).execute().data or []
     now = datetime.now(timezone.utc)
     sent_count = 0
+    detected_count = 0
 
     for subscription in subscriptions:
         movie_title = str(subscription.get("movie_title") or "").strip()
@@ -324,6 +313,15 @@ def check_advance_booking_notifications(subscription_id: str | None = None) -> i
         if not newly_available:
             continue
 
+        if dry_run:
+            detected_count += 1
+            logger.info(
+                "DRY RUN: booking slots detected for %s at %s; email delivery is not configured yet.",
+                movie_title,
+                ", ".join(sorted(newly_available)),
+            )
+            continue
+
         subject, plain, body = _booking_email(movie_title, newly_available)
         try:
             _send_email(str(subscription["email"]), subject, plain, body)
@@ -348,4 +346,4 @@ def check_advance_booking_notifications(subscription_id: str | None = None) -> i
             # Email was sent; log loudly so a failed state update can be reconciled.
             logger.exception("Alert sent but subscription state update failed for %s.", subscription.get("id"))
 
-    return sent_count
+    return detected_count if dry_run else sent_count

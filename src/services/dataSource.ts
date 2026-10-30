@@ -1,8 +1,9 @@
 /*
  * Single boundary for cinema data.
- * - VITE_CINEMA_API_URL points to the FastAPI catalogue API, e.g. /api or
- *   https://your-api.example.com/api.
- * - If unset, the app uses the same-origin /api Vite proxy. There is no demo fallback.
+ * - VITE_CINEMA_API_URL points to FilmUp's API base, e.g. /api or
+ *   https://filmup-api.<workers-subdomain>.workers.dev/api.
+ * - Supports FastAPI wrapped responses and raw PostgREST arrays from the Cloudflare Worker.
+ * - There is deliberately no demo-data fallback.
  */
 import type { Area, Cinema, Movie, RawCinemaData, RawShowtime } from '../types'
 import { sortCinemaDayTimes } from '../lib/schedule'
@@ -44,6 +45,11 @@ interface ApiCatalogueMovie {
 interface ApiCatalogueResponse {
   count?: number
   movies?: ApiCatalogueMovie[]
+}
+
+interface ApiShowtimesResponse {
+  count?: number
+  showtimes?: ApiShowtime[]
 }
 
 const LAHORE_TIME_ZONE = 'Asia/Karachi'
@@ -147,18 +153,45 @@ function inferListingStatus(
 export function createCinemaApiSource(baseUrl: string): CinemaDataSource {
   return {
     async load() {
-      const endpoint = `${baseUrl.replace(/\/$/, '')}/movies?limit=500`
-      let response: Response
-      try {
-        response = await fetch(endpoint, { headers: { Accept: 'application/json' } })
-      } catch {
-        throw new Error(`Can't reach the cinema API at ${endpoint}. Start FastAPI and check VITE_CINEMA_API_URL.`)
-      }
-      if (!response.ok) throw new Error(`Cinema API returned HTTP ${response.status} for ${endpoint}`)
+      const apiBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
+      const moviesEndpoint = apiBase + '/movies?limit=1000'
+      const showtimesEndpoint = apiBase + '/showtimes?limit=2000'
 
-      const payload = await response.json() as ApiCatalogueResponse
-      if (!payload || !Array.isArray(payload.movies)) {
-        throw new Error('Cinema API returned an unexpected response. Expected { movies: [...] } from GET /api/movies.')
+      let moviesResponse: Response
+      let showtimesResponse: Response
+      try {
+        ;[moviesResponse, showtimesResponse] = await Promise.all([
+          fetch(moviesEndpoint, { headers: { Accept: 'application/json' } }),
+          fetch(showtimesEndpoint, { headers: { Accept: 'application/json' } }),
+        ])
+      } catch {
+        throw new Error("Can't reach the cinema API at " + apiBase + ". Check VITE_CINEMA_API_URL and the backend deployment.")
+      }
+
+      if (!moviesResponse.ok) {
+        throw new Error('Cinema API returned HTTP ' + moviesResponse.status + ' for ' + moviesEndpoint)
+      }
+      if (!showtimesResponse.ok) {
+        throw new Error('Cinema API returned HTTP ' + showtimesResponse.status + ' for ' + showtimesEndpoint)
+      }
+
+      const moviePayload = await moviesResponse.json() as ApiCatalogueResponse | ApiCatalogueMovie[]
+      const showtimePayload = await showtimesResponse.json() as ApiShowtimesResponse | ApiShowtime[]
+      const catalogueRecords = Array.isArray(moviePayload) ? moviePayload : moviePayload?.movies
+      const sharedShowtimes = Array.isArray(showtimePayload) ? showtimePayload : showtimePayload?.showtimes
+
+      if (!Array.isArray(catalogueRecords) || !Array.isArray(sharedShowtimes)) {
+        throw new Error('Cinema API returned an unexpected response. Expected movie and showtime arrays.')
+      }
+
+      // Cloudflare returns raw PostgREST arrays; local FastAPI wraps them in {movies}/{showtimes}.
+      const showtimesByTitle = new Map<string, ApiShowtime[]>()
+      for (const row of sharedShowtimes) {
+        if (!row?.movie_title?.trim()) continue
+        const key = titleKey(row.movie_title)
+        const rows = showtimesByTitle.get(key) ?? []
+        rows.push(row)
+        showtimesByTitle.set(key, rows)
       }
 
       // Track which configured venues actually appeared in the live catalogue.
@@ -167,7 +200,7 @@ export function createCinemaApiSource(baseUrl: string): CinemaDataSource {
       // Merge catalogue rows by normalized title. This supports expanding the catalogue
       // to multiple cinema sources without duplicating the same film in the UI.
       const merged = new Map<string, { movie: Movie; raw: ApiCatalogueMovie[]; rawShowtimes: ApiShowtime[] }>()
-      for (const record of payload.movies) {
+      for (const record of catalogueRecords) {
         const observedCinemaId = cinemaIdFromName(record?.cinema_name)
         if (observedCinemaId) cinemaIdsWithRecords.add(observedCinemaId)
         if (!record?.movie_title?.trim()) continue
@@ -198,9 +231,13 @@ export function createCinemaApiSource(baseUrl: string): CinemaDataSource {
           hasUpcomingShowtimes: false,
         }
 
+        const recordShowtimes = [
+          ...(record.showtimes ?? []),
+          ...(showtimesByTitle.get(titleKey(record.movie_title)) ?? []),
+        ]
         const existing = merged.get(key)
         if (!existing) {
-          merged.set(key, { movie, raw: [record], rawShowtimes: [...(record.showtimes ?? [])] })
+          merged.set(key, { movie, raw: [record], rawShowtimes: recordShowtimes })
           continue
         }
         existing.raw.push(record)
@@ -211,7 +248,7 @@ export function createCinemaApiSource(baseUrl: string): CinemaDataSource {
             existing.movie.languageByCinema = { ...languages, [observedCinemaId]: incomingLanguage }
           }
         }
-        existing.rawShowtimes.push(...(record.showtimes ?? []))
+        existing.rawShowtimes.push(...recordShowtimes)
         if (!existing.movie.poster || existing.movie.poster === '/posters/no-poster.svg') existing.movie.poster = movie.poster
         if (!existing.movie.trailerUrl && movie.trailerUrl) existing.movie.trailerUrl = movie.trailerUrl
         if (!existing.movie.language && movie.language) existing.movie.language = movie.language

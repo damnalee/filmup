@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "filmup-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-30",
+  "vars": {
+    "GITHUB_REPOSITORY": "damnalee/filmup",
+    "GITHUB_BRANCH": "main",
+    "CORS_ALLOWED_ORIGINS": "https://filmup.pages.dev",
+    "MAIL_FROM_NAME": "FilmUp Notifications"
+  },
+  "triggers": {
+    "crons": [
+      "5 * * * *",
+      "*/5 * * * *"
+    ]
+  }
+}
