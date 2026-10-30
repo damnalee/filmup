@@ -7,12 +7,21 @@ import json
 import logging
 import os
 
-from advance_booking_routes import check_advance_booking_notifications
-from scraper import run_scrape_job
-from scraper_monitoring import run_monitored_scrape
+
+def check_advance_booking_notifications(*, dry_run: bool = True) -> int:
+    """Load the database-backed notification route only when the job runs."""
+    from advance_booking_routes import check_advance_booking_notifications as check
+
+    return check(dry_run=dry_run)
 
 
 def run_scrape() -> dict:
+    # Scraper imports database.py, which requires real Supabase credentials.
+    # Keep that dependency out of module import so unit tests can load this
+    # scheduler entrypoint without production configuration.
+    from scraper import run_scrape_job
+    from scraper_monitoring import run_monitored_scrape
+
     os.environ.setdefault("SCRAPER_MONITOR_STORAGE", "supabase")
     result = asyncio.run(
         run_monitored_scrape(
