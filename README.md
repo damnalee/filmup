@@ -50,7 +50,7 @@ The main view combines cinema markers on the map with a visible directory of sup
   <img src="docs/screenshots/filmup-cinemas-list.jpg" alt="FilmUp directory of Lahore cinemas with areas, ratings and next listed sessions" width="100%" />
 </p>
 
-### CUE Cinemas showtime details
+### Cinemas and its showtime details
 
 <p align="center">
   <img src="docs/screenshots/filmup-cue-showtimes.jpg" alt="CUE Cinemas detail panel in FilmUp showing movie listings and showtime information" width="100%" />
