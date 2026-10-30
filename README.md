@@ -4,15 +4,23 @@
 
 [![CI](https://github.com/damnalee/filmup/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/damnalee/filmup/actions/workflows/ci.yml)
 
-FilmUp is a Lahore-focused cinema discovery experience. It brings cinema locations, movie listings and upcoming showtimes into one interactive map, with email alerts for advance-booking openings on selected upcoming films.
+FilmUp is a Lahore-focused cinema discovery experience. It brings supported cinema locations, movie listings and available showtimes into one searchable map and directory, with email alerts for advance-booking openings on selected upcoming films.
 
 <p align="center">
-  <img src="docs/screenshots/filmup-map.jpg" alt="FilmUp interactive 3D map of Lahore with cinema locations and movie ribbons" width="100%" />
+  <img src="docs/screenshots/filmup-map.jpg" alt="FilmUp Lahore map showing cinema markers, a live list of supported cinemas and movie showtime ribbons" width="100%" />
 </p>
 
 <p align="center">
   <strong>React · TypeScript · Vite · FastAPI · Supabase · MapLibre</strong>
 </p>
+
+## The problem FilmUp solves
+
+Finding a movie time in Lahore can mean opening several cinema websites one by one, checking different booking apps, and comparing listings across separate pages. Those booking apps do not provide one dependable, concurrent view of the available slots across all the cinemas a moviegoer may want to compare. That makes a simple question — *which cinema has the best showtime for this movie?* — unnecessarily time-consuming.
+
+**FilmUp's main objective is to bring the supported Lahore cinemas and their available movie sessions together in one place.** Instead of switching between separate websites and apps, people can explore cinema locations on a shared map, browse one consolidated cinema and movie list, and compare the showtimes that FilmUp has collected from supported sources. Upcoming titles can also be followed with advance-booking email alerts.
+
+FilmUp is a discovery layer, not a ticket-booking marketplace: when a cinema publishes a booking link, users continue to that cinema or provider to complete the purchase. Coverage depends on the cinemas and sources currently supported by FilmUp; it does not claim to list every venue or every slot in Lahore.
 
 ## What FilmUp does
 
@@ -26,32 +34,37 @@ FilmUp is a discovery and notification product. It does not sell tickets or guar
 
 ## Product screens
 
-The screenshots below are captures of the real FilmUp interface running locally. They show the current product flow rather than mockups.
+These are captures of the actual FilmUp interface running locally, not design mockups.
 
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <img src="docs/screenshots/filmup-cinemas-list.jpg" alt="FilmUp cinema directory showing Lahore venues and their next listed showtimes" width="100%" />
-      <p><strong>Cinema directory</strong><br />Browse supported Lahore cinemas, compare their areas and ratings, and see the next listed session.</p>
-    </td>
-    <td width="50%" valign="top">
-      <img src="docs/screenshots/filmup-cue-showtimes.jpg" alt="CUE Cinemas detail panel with currently listed movies and showtimes" width="100%" />
-      <p><strong>CUE Cinemas and showtimes</strong><br />Open a venue on the map to review its movie listings and available showtime information.</p>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <img src="docs/screenshots/filmup-upcoming-dune.jpg" alt="Dune Part Three movie details marked coming soon in FilmUp" width="100%" />
-      <p><strong>Upcoming movies</strong><br />View a coming-soon title such as <em>Dune: Part Three</em>, even before cinemas publish sessions.</p>
-    </td>
-    <td width="50%" valign="top">
-      <img src="docs/screenshots/filmup-advance-booking-alert.jpg" alt="FilmUp advance-booking alert form with email and cinema choices" width="100%" />
-      <p><strong>Advance-booking alerts</strong><br />Choose an email address and the cinemas to watch. FilmUp sends a confirmation email before alerts are activated.</p>
-    </td>
-  </tr>
-</table>
+### Lahore map with cinema locations
 
-The map and product screens were captured on 30 October 2026. Movie catalogues, release information and showtimes are live data and can change after these screenshots are taken.
+The main view combines cinema markers on the map with a visible directory of supported venues and the movie ribbons along the bottom. It is designed to make the cinema options visible together instead of making people inspect each venue separately.
+
+<p align="center">
+  <img src="docs/screenshots/filmup-map.jpg" alt="FilmUp map with visible Lahore cinema markers, the cinema directory and movie ribbons" width="100%" />
+</p>
+
+### Browse the cinema directory
+
+<p align="center">
+  <img src="docs/screenshots/filmup-cinemas-list.jpg" alt="FilmUp directory of Lahore cinemas with areas, ratings and next listed sessions" width="100%" />
+</p>
+
+### CUE Cinemas showtime details
+
+<p align="center">
+  <img src="docs/screenshots/filmup-cue-showtimes.jpg" alt="CUE Cinemas detail panel in FilmUp showing movie listings and showtime information" width="100%" />
+</p>
+
+### Dune: Part Three — coming soon and booking alerts
+
+This single view shows the upcoming movie details and its advance-booking alert form together. A user can enter an email address, select the cinemas to watch, and confirm the subscription. FilmUp then checks for matching future sessions and emails the user when booking opens at a selected cinema.
+
+<p align="center">
+  <img src="docs/screenshots/filmup-advance-booking-alert.jpg" alt="Dune Part Three coming-soon movie panel with the FilmUp email and cinema selection form for advance-booking alerts" width="100%" />
+</p>
+
+The screenshots were captured on 30 October 2026. Movie catalogues, release information and showtimes are live data and can change after capture.
 
 ## Architecture
 
