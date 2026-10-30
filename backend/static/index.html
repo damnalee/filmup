@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#090c13">
+    <meta name="description" content="Meet MIRA, your interactive cinema companion for movie showtimes in Lahore.">
+    <title>CineLahore — Meet MIRA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/app.js" defer></script>
+</head>
+
+<body>
+    <canvas id="liquid-canvas" aria-hidden="true"></canvas>
+    <div class="grain-layer" aria-hidden="true"></div>
+
+    <div class="site-shell">
+        <header class="topbar">
+            <a href="#home" class="brand" aria-label="CineLahore home">
+                <span class="brand-mark">
+                    <svg viewBox="0 0 36 36" aria-hidden="true">
+                        <path d="M7 7h22v22H7z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M13 11v14l12-7z" fill="currentColor"/>
+                        <path d="M4 12h3M4 18h3M4 24h3M29 12h3M29 18h3M29 24h3"
+                              stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                </span>
+                <span class="brand-word">CINE<span>LAHORE</span></span>
+            </a>
+
+            <nav class="top-nav" aria-label="Main navigation">
+                <a href="#mira-console">Meet MIRA</a>
+                <a href="#the-signal">How it works</a>
+            </nav>
+
+            <div class="top-meta">
+                <span class="location-tag">
+                    <span class="tiny-pulse"></span>
+                    LAHORE / PKT
+                </span>
+                <a class="top-cta" href="#mira-console">Find your film <span>↗</span></a>
+            </div>
+        </header>
+
+        <main>
+            <section class="hero" id="home">
+                <div class="hero-copy">
+                    <div class="eyebrow">
+                        <span class="eyebrow-index">01</span>
+                        <span class="eyebrow-rule"></span>
+                        <span>LAHORE AFTER DARK</span>
+                    </div>
+
+                    <h1>
+                        Don't browse<br>
+                        the night.<br>
+                        <em>Enter it.</em>
+                    </h1>
+
+                    <p class="hero-description">
+                        The city has a thousand screens. MIRA helps you find
+                        the one worth showing up for.
+                    </p>
+
+                    <p class="hero-description secondary-copy">
+                        Tell her what you're in the mood for. A film, a cinema,
+                        a time. She'll search the saved showtimes and make sense
+                        of the options.
+                    </p>
+
+                    <div class="hero-actions">
+                        <a href="#mira-console" class="primary-action">
+                            <span class="action-orb"></span>
+                            Talk to MIRA
+                            <span class="action-arrow">↓</span>
+                        </a>
+                        <span class="handwritten-note">Your plus-one for movie night.</span>
+                    </div>
+
+                    <div class="hero-data">
+                        <div class="data-item">
+                            <span class="data-number">03</span>
+                            <span class="data-label">CINEMA NETWORKS</span>
+                        </div>
+                        <div class="data-separator"></div>
+                        <div class="data-item">
+                            <span class="data-number">01</span>
+                            <span class="data-label">CLEVER COMPANION</span>
+                        </div>
+                        <div class="data-separator"></div>
+                        <div class="data-item">
+                            <span class="data-number">∞</span>
+                            <span class="data-label">WAYS TO ASK</span>
+                        </div>
+                    </div>
+
+                    <div class="hero-footnote">
+                        <span class="footnote-cross">✳</span>
+                        Showtimes are stored in the cinema database and refreshed
+                        in the background.
+                    </div>
+                </div>
+
+                <aside class="mira-console" id="mira-console" aria-label="Chat with MIRA">
+                    <div class="console-topbar">
+                        <div class="console-title">
+                            <span class="console-led"></span>
+                            <div>
+                                <strong>MIRA</strong>
+                                <span class="console-subtitle">MOVIE INTUITION &amp; ROUTING AIDE</span>
+                            </div>
+                        </div>
+                        <div class="console-version">PERSONA / 001</div>
+                    </div>
+
+                    <div class="mira-stage" id="mira-stage" data-mood="idle">
+                        <div class="stage-grid" aria-hidden="true"></div>
+                        <div class="orbit orbit-one" aria-hidden="true"></div>
+                        <div class="orbit orbit-two" aria-hidden="true"></div>
+                        <div class="orbit orbit-three" aria-hidden="true"></div>
+                        <div class="stage-cross cross-one" aria-hidden="true">+</div>
+                        <div class="stage-cross cross-two" aria-hidden="true">+</div>
+                        <div class="stage-coordinate coordinate-left">31° 28' N</div>
+                        <div class="stage-coordinate coordinate-right">74° 21' E</div>
+
+                        <div class="avatar-halo" aria-hidden="true"></div>
+
+                        <svg class="mira-avatar" id="mira-avatar" viewBox="0 0 340 310"
+                             role="img" aria-label="MIRA, your animated cinema companion">
+                            <defs>
+                                <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0" stop-color="#f8d16a"/>
+                                    <stop offset=".45" stop-color="#ff8c6e"/>
+                                    <stop offset="1" stop-color="#d75d88"/>
+                                </linearGradient>
+                                <linearGradient id="face" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0" stop-color="#ffe8d2"/>
+                                    <stop offset="1" stop-color="#eab5a8"/>
+                                </linearGradient>
+                                <linearGradient id="jacket" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0" stop-color="#a8f2df"/>
+                                    <stop offset=".55" stop-color="#5686ae"/>
+                                    <stop offset="1" stop-color="#354a7d"/>
+                                </linearGradient>
+                                <linearGradient id="visor" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0" stop-color="#192232"/>
+                                    <stop offset="1" stop-color="#101725"/>
+                                </linearGradient>
+                                <filter id="softGlow">
+                                    <feGaussianBlur stdDeviation="7"/>
+                                </filter>
+                            </defs>
+
+                            <!-- Hair silhouette -->
+                            <path d="M83 153C66 105 73 51 119 28C157 6 220 17 247 53
+                                     C273 88 263 136 252 172L229 230H108Z"
+                                  fill="url(#hair)"/>
+                            <path d="M95 126C77 89 91 51 123 37C153 23 190 31 210 49
+                                     C180 44 168 65 152 89C137 110 118 116 95 126Z"
+                                  fill="#ffd981" opacity=".72"/>
+                            <path d="M221 35C267 58 273 111 250 158L234 179L220 132
+                                     C236 96 232 65 221 35Z"
+                                  fill="#db6482"/>
+
+                            <!-- Neck and shoulders -->
+                            <path d="M141 202L140 236L201 251L211 215Z"
+                                  fill="url(#face)"/>
+                            <path d="M103 222C74 230 54 253 42 310H287
+                                     C276 254 253 231 215 220L194 243
+                                     L172 264L145 242Z"
+                                  fill="url(#jacket)"/>
+                            <path d="M140 235L172 264L202 239L218 310H122Z"
+                                  fill="#172438" opacity=".9"/>
+                            <path d="M140 235L172 264L153 283L128 246Z"
+                                  fill="#f8d16a"/>
+                            <path d="M202 239L172 264L191 283L215 246Z"
+                                  fill="#f8d16a"/>
+                            <path d="M172 264V310" stroke="#a8f2df" stroke-width="2" opacity=".7"/>
+                            <circle cx="172" cy="286" r="4" fill="#f8d16a"/>
+                            <circle cx="172" cy="297" r="2" fill="#f8d16a"/>
+
+                            <!-- Face -->
+                            <path d="M105 98C105 62 130 45 169 47
+                                     C210 48 232 71 231 112L225 165
+                                     C220 204 195 225 168 224
+                                     C140 222 118 199 111 165Z"
+                                  fill="url(#face)"/>
+
+                            <!-- Ear pieces -->
+                            <path d="M111 133C96 122 91 142 103 157L117 163Z"
+                                  fill="#f0c0ae"/>
+                            <path d="M225 129C242 119 247 141 232 159L221 163Z"
+                                  fill="#ecb5a5"/>
+                            <path d="M104 133L115 137L118 158L106 152Z"
+                                  fill="#1b273b"/>
+                            <path d="M226 134L239 130L236 152L224 160Z"
+                                  fill="#1b273b"/>
+                            <circle cx="232" cy="144" r="5" fill="#a8f2df"/>
+                            <circle cx="110" cy="144" r="4" fill="#f8d16a"/>
+
+                            <!-- Fringe -->
+                            <path d="M95 113C86 77 108 36 147 30
+                                     C193 18 225 42 237 81
+                                     C220 70 207 68 194 70
+                                     C177 74 161 94 140 104
+                                     C123 112 108 112 95 113Z"
+                                  fill="url(#hair)"/>
+                            <path d="M145 44C147 68 130 91 112 107
+                                     C131 106 154 91 170 72
+                                     C184 54 203 54 219 72
+                                     C198 41 173 35 145 44Z"
+                                  fill="#ffb16e"/>
+                            <path d="M101 94C98 119 107 145 115 157
+                                     C88 144 79 114 91 82Z"
+                                  fill="#e96e80"/>
+
+                            <!-- Face details -->
+                            <path d="M125 132C136 123 149 124 157 132"
+                                  fill="none" stroke="#744a52" stroke-width="3"
+                                  stroke-linecap="round"/>
+                            <path d="M185 132C196 123 209 125 216 132"
+                                  fill="none" stroke="#744a52" stroke-width="3"
+                                  stroke-linecap="round"/>
+
+                            <g class="avatar-eyes">
+                                <ellipse cx="143" cy="146" rx="9" ry="12" fill="#fff3df"/>
+                                <ellipse cx="199" cy="146" rx="9" ry="12" fill="#fff3df"/>
+                                <ellipse cx="145" cy="147" rx="5" ry="8" fill="#203b4c"/>
+                                <ellipse cx="201" cy="147" rx="5" ry="8" fill="#203b4c"/>
+                                <circle cx="147" cy="143" r="2.7" fill="white"/>
+                                <circle cx="203" cy="143" r="2.7" fill="white"/>
+                            </g>
+
+                            <path d="M170 149L165 173L174 176"
+                                  fill="none" stroke="#d79e91" stroke-width="2"
+                                  stroke-linecap="round" stroke-linejoin="round"/>
+                            <ellipse cx="130" cy="169" rx="11" ry="6"
+                                     fill="#e7838b" opacity=".35"/>
+                            <ellipse cx="209" cy="169" rx="11" ry="6"
+                                     fill="#e7838b" opacity=".35"/>
+
+                            <!-- Mouth changes with speaking animation -->
+                            <path class="mouth-closed" d="M151 190C163 199 179 199 191 189"
+                                  fill="none" stroke="#a84e61" stroke-width="3"
+                                  stroke-linecap="round"/>
+                            <ellipse class="mouth-open" cx="171" cy="194"
+                                     rx="10" ry="3" fill="#873e54"/>
+                            <path class="mouth-glint" d="M164 196Q171 200 178 196"
+                                  fill="none" stroke="#f3a3a1" stroke-width="1.6"/>
+
+                            <!-- Headset / cinema tech -->
+                            <path d="M93 112C83 57 126 19 170 22
+                                     C217 21 253 59 246 109"
+                                  fill="none" stroke="#202a3b" stroke-width="8"
+                                  stroke-linecap="round"/>
+                            <path d="M92 103C85 62 122 26 166 26"
+                                  fill="none" stroke="#a8f2df" stroke-width="2"
+                                  stroke-linecap="round" opacity=".85"/>
+                            <path d="M244 99L257 115L249 144L232 147"
+                                  fill="none" stroke="#1b263a" stroke-width="8"
+                                  stroke-linecap="round"/>
+                            <circle cx="244" cy="140" r="9" fill="#a8f2df"/>
+                            <circle cx="244" cy="140" r="4" fill="#20364a"/>
+                        </svg>
+
+                        <div class="character-float-badge">
+                            <span class="badge-pulse"></span>
+                            <span>CHARACTER ONLINE</span>
+                        </div>
+
+                        <div class="character-caption">
+                            <span class="caption-name">MIRA<span class="caption-period">.</span></span>
+                            <span class="caption-description" id="avatar-status">HERE FOR THE PLOT</span>
+                        </div>
+                    </div>
+
+                    <div class="character-line" id="character-line">
+                        "Tell me the mood. I'll find the screening."
+                    </div>
+
+                    <div class="chat-divider">
+                        <span>START A CONVERSATION</span>
+                        <span class="divider-signal">● ● ●</span>
+                    </div>
+
+                    <div class="chat-workspace">
+                        <div class="messages" id="messages" role="log" aria-live="polite" aria-relevant="additions text">
+                            <div class="message-row assistant">
+                                <div class="message-avatar">M</div>
+                                <div class="message-content">
+                                    <span class="message-sender">MIRA <span>JUST NOW</span></span>
+                                    <div class="message-bubble">
+                                        Hey, movie person. What's the plan tonight?
+                                        Give me a title, a time, or just a vibe.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="suggestions" id="suggestions">
+                            <button type="button" class="suggestion"
+                                    data-prompt="What are the next three showtimes for A Talent for Murder at Cue Cinemas in Lahore?">
+                                <span class="suggestion-icon">↗</span>
+                                A Talent for Murder
+                            </button>
+                            <button type="button" class="suggestion"
+                                    data-prompt="What movies have showtimes at Universal Cinemas in Lahore?">
+                                <span class="suggestion-icon">◉</span>
+                                Universal Cinemas
+                            </button>
+                            <button type="button" class="suggestion"
+                                    data-prompt="Show me movies playing in the evening at Lahore cinemas.">
+                                <span class="suggestion-icon">☾</span>
+                                Evening plans
+                            </button>
+                        </div>
+
+                        <div class="typing-indicator" id="typing-indicator" hidden>
+                            <span class="typing-orb"></span>
+                            MIRA IS CONNECTING THE DOTS
+                        </div>
+                    </div>
+
+                    <form class="chat-form" id="chat-form">
+                        <label for="message-input" class="visually-hidden">Message MIRA</label>
+                        <input id="message-input" name="message" type="text"
+                               maxlength="4000" autocomplete="off"
+                               placeholder="Tell me what you're in the mood for…"
+                               required>
+                        <button type="button" id="voice-button" class="icon-button"
+                                aria-label="Speak your message" title="Speak your message">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="9" y="3" width="6" height="12" rx="3"/>
+                                <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3m-4 0h8"/>
+                            </svg>
+                        </button>
+                        <button type="submit" class="send-button" id="send-button"
+                                aria-label="Send message">
+                            <span>SEND</span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M4 12h15m-6-6 6 6-6 6"/>
+                            </svg>
+                        </button>
+                    </form>
+
+                    <div class="console-footer">
+                        <span><span class="footer-lock">◇</span> YOUR CHAT, YOUR PACE</span>
+                        <span id="voice-hint">TEXT READY / MIC OPTIONAL</span>
+                    </div>
+                </aside>
+            </section>
+
+            <section class="signal-section" id="the-signal">
+                <div class="signal-heading">
+                    <div class="eyebrow">
+                        <span class="eyebrow-index">02</span>
+                        <span class="eyebrow-rule"></span>
+                        <span>BEHIND THE SCREEN</span>
+                    </div>
+                    <h2>Good cinema starts<br>with <em>good intel.</em></h2>
+                </div>
+
+                <div class="signal-copy">
+                    <p>
+                        MIRA doesn't invent a screening schedule. She searches
+                        the showtimes already collected for Lahore, then puts
+                        the useful bits in one conversation.
+                    </p>
+                    <p>
+                        Listings are refreshed separately from your chat.
+                        Before you head out, confirm availability and ticket
+                        details with the cinema.
+                    </p>
+                </div>
+
+                <div class="source-grid">
+                    <article class="source-card">
+                        <span class="source-index">NETWORK / 01</span>
+                        <div class="source-icon cue-icon">C<span>UE</span></div>
+                        <h3>Cue Cinemas</h3>
+                        <p>Film schedules and booking links when available.</p>
+                        <span class="source-status"><span></span> CONNECTED TO LISTINGS</span>
+                    </article>
+
+                    <article class="source-card">
+                        <span class="source-index">NETWORK / 02</span>
+                        <div class="source-icon universal-icon">U<span>—</span></div>
+                        <h3>Universal Cinemas</h3>
+                        <p>Lahore showtimes collected from cinema listings.</p>
+                        <span class="source-status"><span></span> CONNECTED TO LISTINGS</span>
+                    </article>
+
+                    <article class="source-card">
+                        <span class="source-index">NETWORK / 03</span>
+                        <div class="source-icon cinepax-icon">C<span>✳</span></div>
+                        <h3>Cinepax</h3>
+                        <p>Selected Lahore locations and session information.</p>
+                        <span class="source-status"><span></span> CONNECTED TO LISTINGS</span>
+                    </article>
+                </div>
+            </section>
+
+            <footer class="site-footer">
+                <a href="#home" class="footer-brand">CINE<span>LAHORE</span><i>®</i></a>
+                <span>A little weird about movies. In a good way.</span>
+                <a href="#mira-console">Back to MIRA ↑</a>
+            </footer>
+        </main>
+    </div>
+</body>
+</html>

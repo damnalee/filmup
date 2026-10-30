@@ -1,0 +1,181 @@
+[
+  {
+    "id": "cinepax-packages-mall",
+    "name": "Cinepax Packages Mall",
+    "address": "Packages Mall, Walton Road",
+    "city": "Lahore",
+    "area": "Walton",
+    "lat": 31.47141,
+    "lng": 74.35704,
+    "image": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1200&q=70",
+    "rating": 4.5,
+    "phone": "+92 42 111 246 372",
+    "screens": 10,
+    "verified": true,
+    "features": [
+      "10 Screens",
+      "4DX",
+      "Dolby Atmos"
+    ]
+  },
+  {
+    "id": "cinepax-amanah-mall",
+    "name": "Cinepax Amanah Mall",
+    "address": "Amanah Mall, Model Town Link Road",
+    "city": "Lahore",
+    "area": "Model Town",
+    "lat": 31.467,
+    "lng": 74.31578,
+    "image": "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=1200&q=70",
+    "rating": 4.2,
+    "phone": "+92 42 3513 1682",
+    "verified": true,
+    "features": [
+      "Multiplex",
+      "Mall Cinema"
+    ]
+  },
+  {
+    "id": "universal-cinemas-emporium",
+    "name": "Universal Cinemas",
+    "address": "Emporium Mall, Abdul Haque Road",
+    "city": "Lahore",
+    "area": "Johar Town",
+    "lat": 31.46798,
+    "lng": 74.26643,
+    "image": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=1200&q=70",
+    "rating": 4.4,
+    "phone": "+92 316 666 8888",
+    "screens": 10,
+    "verified": true,
+    "features": [
+      "10 Screens",
+      "Ultra",
+      "Gold",
+      "Premium"
+    ]
+  },
+  {
+    "id": "cinestar-township",
+    "name": "CineStar Township",
+    "address": "Plot 13, Civic Center, Township",
+    "city": "Lahore",
+    "area": "Township",
+    "lat": 31.45046,
+    "lng": 74.31075,
+    "image": "https://images.unsplash.com/photo-1595769816263-9b910be24d5f?auto=format&fit=crop&w=1200&q=70",
+    "rating": 4.6,
+    "phone": "+92 323 515 7460",
+    "verified": true,
+    "features": [
+      "Largest Screen in Lahore",
+      "3D"
+    ]
+  },
+  {
+    "id": "cinestar-xinhua-mall",
+    "name": "CineStar Xinhua Mall",
+    "address": "4th Floor, Xinhua Mall, 24-B/2 Mian Mehmood Ali Kasoori Road, Block B2, Gulberg III",
+    "city": "Lahore",
+    "area": "Gulberg III",
+    "lat": 31.5072,
+    "lng": 74.3542,
+    "image": "https://visitlahore.com/wp-content/uploads/2020/03/Cinestar-Xinhua-Mall.jpg",
+    "rating": 4.5,
+    "phone": "+92 320 0000874",
+    "verified": true,
+    "features": [
+      "CineStar",
+      "Xinhua Mall",
+      "4th Floor"
+    ]
+  },
+  {
+    "id": "cinestar-dha-raya",
+    "name": "CineStar DHA Raya",
+    "address": "Defence Raya Golf Resort, Sector M, DHA Phase 6",
+    "city": "Lahore",
+    "area": "DHA",
+    "lat": 31.47067,
+    "lng": 74.46965,
+    "image": "https://images.unsplash.com/photo-1524712245354-2c4e5e7121c0?auto=format&fit=crop&w=1200&q=70",
+    "rating": 4.6,
+    "phone": "+92 320 000 0758",
+    "screens": 3,
+    "verified": true,
+    "features": [
+      "3 Screens",
+      "Golf Resort"
+    ]
+  },
+  {
+    "id": "raiha-cinegold-plex",
+    "name": "Raiha CineGold Plex",
+    "address": "Sector F, Bahria Town",
+    "city": "Lahore",
+    "area": "Bahria Town",
+    "lat": 31.34882,
+    "lng": 74.17054,
+    "image": "https://images.unsplash.com/photo-1585951237318-9ea5e175b891?auto=format&fit=crop&w=1200&q=70",
+    "rating": 4.5,
+    "phone": "+92 42 3546 7190",
+    "screens": 3,
+    "verified": true,
+    "features": [
+      "Gold Lounge Recliners",
+      "Red Lounge",
+      "VIP Boxes"
+    ]
+  },
+  {
+    "id": "chalo-cinema-fortress",
+    "name": "Chalo Cinema",
+    "address": "Fortress Square Mall, Lahore Cantt",
+    "city": "Lahore",
+    "area": "Cantt",
+    "lat": 31.53236,
+    "lng": 74.36313,
+    "image": "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=1200&q=70",
+    "rating": 4.2,
+    "phone": "",
+    "verified": false,
+    "features": [
+      "Mall Cinema"
+    ]
+  },
+  {
+    "id": "cue-cinemas-gulberg",
+    "name": "CUE Cinemas",
+    "address": "Boulevard 57, Main Boulevard, Gulberg",
+    "city": "Lahore",
+    "area": "Gulberg",
+    "lat": 31.5192,
+    "lng": 74.3463,
+    "image": "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?auto=format&fit=crop&w=1200&q=70",
+    "rating": 4.5,
+    "phone": "+92 330 056 5656",
+    "verified": false,
+    "features": [
+      "Boutique",
+      "Recliners"
+    ]
+  },
+  {
+    "id": "dha-cinema",
+    "name": "DHA Cinema",
+    "address": "305 R Block, Lalik Jan Chowk, DHA Phase 2",
+    "city": "Lahore",
+    "area": "DHA",
+    "lat": 31.47561,
+    "lng": 74.40421,
+    "image": "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1200&q=70",
+    "rating": 4.0,
+    "phone": "",
+    "screens": 1,
+    "verified": false,
+    "features": [
+      "Single Screen",
+      "483 Seats"
+    ]
+  }
+]

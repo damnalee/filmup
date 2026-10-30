@@ -1,0 +1,26 @@
+{
+  "duration": 2.8,
+  "hasAudio": true,
+  "poster": "/intro/poster.jpg",
+  "posterMobile": "/intro/poster-mobile.jpg",
+  "desktop": [
+    {
+      "src": "/intro/intro-1080.webm",
+      "type": "video/webm; codecs=\"vp9, opus\""
+    },
+    {
+      "src": "/intro/intro-1080.mp4",
+      "type": "video/mp4"
+    }
+  ],
+  "mobile": [
+    {
+      "src": "/intro/intro-720.webm",
+      "type": "video/webm; codecs=\"vp9, opus\""
+    },
+    {
+      "src": "/intro/intro-720.mp4",
+      "type": "video/mp4"
+    }
+  ]
+}

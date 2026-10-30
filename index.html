@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#07070a" />
+    <meta name="description" content="FilmUp — every cinema in Lahore and every showtime, on one 3D map." />
+    <meta name="application-name" content="FilmUp" />
+    <meta property="og:site_name" content="FilmUp" />
+    <meta property="og:title" content="FilmUp — Lahore Showtimes on the Map" />
+    <meta property="og:description" content="Every cinema in Lahore and every showtime, on one 3D map." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin />
+    <!-- Fonts load without blocking first paint (the intro doesn't need them) -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <title>FilmUp — Lahore Showtimes on the Map</title>
+
+    <!-- Intro boot: decided before any JS bundle loads, so the video starts immediately.
+         Shown once per session; skipped for reduced-motion users. -->
+    <style>
+      #intro { position: fixed; inset: 0; z-index: 80; background: #05070d; opacity: 1; transition: opacity 0.5s ease; will-change: opacity; }
+      #intro.is-leaving { opacity: 0; pointer-events: none; }
+      #intro video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      @media (orientation: portrait) { #intro video { object-fit: contain; } }
+    </style>
+    <script>
+      ;(function () {
+        var show = true
+        try { show = !sessionStorage.getItem('filmup:intro-seen') } catch (e) {}
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) show = false
+        window.__introBoot = show
+        if (!show) return
+        // Fetch the video + poster at top priority while the rest of the page loads
+        var v = document.createElement('link')
+        v.rel = 'preload'; v.as = 'video'; v.href = '/intro/intro-720.mp4'; v.type = 'video/mp4'
+        var p = document.createElement('link')
+        p.rel = 'preload'; p.as = 'image'; p.href = '/intro/poster.jpg'
+        document.head.appendChild(v); document.head.appendChild(p)
+      })()
+    </script>
+  </head>
+  <body>
+    <script>
+      if (window.__introBoot) {
+        document.body.insertAdjacentHTML(
+          'afterbegin',
+          '<div id="intro" aria-label="Intro"><video id="intro-video" src="/intro/intro-720.mp4" poster="/intro/poster.jpg" autoplay muted playsinline preload="auto" disablepictureinpicture></video></div>'
+        )
+        // Failsafe: never leave the intro covering the page if the app fails to start
+        setTimeout(function () { var el = document.getElementById('intro'); if (el && !el.dataset.adopted) el.remove() }, 15000)
+      }
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

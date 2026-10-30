@@ -1,0 +1,39 @@
+# Node / Vite
+node_modules/
+dist/
+*.log
+
+# Environment secrets (keep example templates)
+.env
+.env.*
+!.env.example
+!backend/.env.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Scraper runtime output and local state
+backend/scrape_output/
+backend/logs/
+*.sqlite3
+*.db
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Generated promo working files (the final deliverables are committed explicitly)
+
+# HyperFrames generated caches, diagnostics and preview renders
+brag-output/composition/.hyperframes/
+brag-output/composition/node_modules/
+brag-output/brag-draft.mp4
