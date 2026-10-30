@@ -7,7 +7,7 @@
 FilmUp is a Lahore-focused cinema discovery experience. It brings supported cinema locations, movie listings and available showtimes into one searchable map and directory, with email alerts for advance-booking openings on selected upcoming films.
 
 <p align="center">
-  <img src="docs/screenshots/cinema mapping.jpg" alt="FilmUp Lahore map showing cinema markers, a live list of supported cinemas and movie showtime ribbons" width="100%" />
+  <img src="docs/screenshots/cinema mapping.png" alt="FilmUp Lahore map showing cinema markers, a live list of supported cinemas and movie showtime ribbons" width="100%" />
 </p>
 
 <p align="center">
