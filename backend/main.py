@@ -52,6 +52,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 from scraper import run_scrape_job
+from scraper_monitoring import get_monitoring_snapshot, run_monitored_scrape
 from chatbot import chat_with_cinema, GROQ_MODEL
 from advance_booking_routes import (
     router as advance_booking_router,
@@ -72,6 +73,11 @@ class ChatRequest(BaseModel):
 scheduler = None
 
 
+async def monitored_scrape_job():
+    """Keep APScheduler's coroutine handling while observing the original job."""
+    await run_monitored_scrape(run_scrape_job, trigger="scheduled")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global scheduler
@@ -80,7 +86,7 @@ async def lifespan(app: FastAPI):
         scheduler = AsyncIOScheduler(timezone=APP_TIMEZONE)
 
         scheduler.add_job(
-            run_scrape_job,
+            monitored_scrape_job,
             trigger=CronTrigger(
                 minute=SCRAPER_SCHEDULE_MINUTE,
                 hour=f"*/{SCRAPER_INTERVAL_HOURS}",
@@ -196,6 +202,14 @@ async def health():
             else None
         ),
     }
+
+
+@app.get("/api/monitoring/scraper")
+async def scraper_monitoring(limit: int = 20):
+    """Read-only operational view of scraper executions and audit summaries."""
+    if not 1 <= limit <= 100:
+        raise HTTPException(status_code=422, detail="limit must be between 1 and 100")
+    return get_monitoring_snapshot(limit=limit)
 
 
 @app.post("/chat")

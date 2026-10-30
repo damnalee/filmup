@@ -32,3 +32,17 @@ See `.env.example` and the [complete setup guide](../docs/SETUP.md). Keep `.env`
 ## Runtime notes
 
 The scheduler currently runs inside the FastAPI process. It starts an hourly cinema refresh and a five-minute advance-booking notification check when `SCRAPER_ENABLED=true`. A sleeping/restarted free-tier service cannot guarantee these jobs. See [deployment notes](../docs/DEPLOYMENT.md).
+
+## Scraper monitoring layer
+
+The existing scraper remains the source of truth for collection, parsing, Supabase writes, reconciliation, and showtime audits. A separate `scraper_monitoring.py` wrapper observes scheduled and manual CLI executions without changing that logic. It records run status, duration, row counts, source snapshot outcomes, warning/error counts, and summaries from the existing read-only audit JSON reports in a local SQLite database at `scrape_output/monitoring.sqlite3` (ignored by Git).
+
+Read the latest run and recent history at `GET /api/monitoring/scraper` (optional `?limit=20`, maximum 100). This endpoint returns operational counts and audit summaries, not raw logs or credentials. Runs are classified as `success`, `completed_with_warnings`, `failed`, or `interrupted`. An in-progress run is marked interrupted if the process restarts and it remains running for more than six hours.
+
+Monitoring is local to the backend instance by default. For multi-instance deployments, configure `SCRAPER_MONITOR_DB_PATH` to a shared durable SQLite-compatible volume, or replace the storage adapter with a shared database before running multiple backend replicas.
+
+Run the isolated monitor tests (no network, Supabase writes, or real scraper execution):
+
+```bash
+python -m unittest -v test_scraper_monitoring.py
+```
