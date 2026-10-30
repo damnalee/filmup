@@ -35,11 +35,13 @@ The scheduler currently runs inside the FastAPI process. It starts an hourly cin
 
 ## Scraper monitoring layer
 
-The existing scraper remains the source of truth for collection, parsing, Supabase writes, reconciliation, and showtime audits. A separate `scraper_monitoring.py` wrapper observes scheduled and manual CLI executions without changing that logic. It records run status, duration, row counts, source snapshot outcomes, warning/error counts, and summaries from the existing read-only audit JSON reports in a local SQLite database at `scrape_output/monitoring.sqlite3` (ignored by Git).
+The existing scraper remains the source of truth for collection, parsing, Supabase writes, reconciliation, and showtime audits. A separate `scraper_monitoring.py` wrapper observes scheduled and manual CLI executions without changing that logic. It records run status, duration, row counts, source snapshot outcomes, warning/error counts, and summaries from the existing read-only audit JSON reports.
+
+For shared cloud history, run `supabase_scraper_monitoring.sql` once in the Supabase SQL Editor and set `SCRAPER_MONITOR_STORAGE=supabase` in the backend environment. This creates a separate `public.scraper_runs` table protected by RLS; only the server-side `service_role` can access it. `SCRAPER_MONITOR_STORAGE=auto` tries Supabase first and falls back to local SQLite if the table/API is unavailable. Set `SCRAPER_MONITOR_STORAGE=sqlite` for local-only development. The SQLite database defaults to `scrape_output/monitoring.sqlite3` and is ignored by Git.
 
 Read the latest run and recent history at `GET /api/monitoring/scraper` (optional `?limit=20`, maximum 100). This endpoint returns operational counts and audit summaries, not raw logs or credentials. Runs are classified as `success`, `completed_with_warnings`, `failed`, or `interrupted`. An in-progress run is marked interrupted if the process restarts and it remains running for more than six hours.
 
-Monitoring is local to the backend instance by default. For multi-instance deployments, configure `SCRAPER_MONITOR_DB_PATH` to a shared durable SQLite-compatible volume, or replace the storage adapter with a shared database before running multiple backend replicas.
+The read-only `GET /api/monitoring/scraper` endpoint reads from the configured monitoring store, so Supabase-backed history is visible across backend instances and can power a future admin dashboard. Keep this endpoint behind your deployment's admin authentication or gateway policy before exposing it publicly. The SQLite fallback is local to one backend instance and is intended for development/offline use, not multi-instance cloud deployments.
 
 Run the isolated monitor tests (no network, Supabase writes, or real scraper execution):
 
