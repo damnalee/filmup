@@ -10,7 +10,7 @@ interface Props {
 
 export default function AdvanceBookingSignup({ movieTitle, cinemas }: Props) {
   const options = useMemo(
-    () => [...cinemas].filter((cinema) => cinema.verified).sort((a, b) => a.name.localeCompare(b.name)),
+    () => [...cinemas].filter((cinema) => cinema.id !== 'chalo-cinema-fortress').sort((a, b) => a.name.localeCompare(b.name)),
     [cinemas],
   )
   const [email, setEmail] = useState('')
@@ -113,7 +113,7 @@ export default function AdvanceBookingSignup({ movieTitle, cinemas }: Props) {
                 )
               })}
             </div>
-            {!options.length && <p className="text-xs text-neutral-500">No verified cinemas are currently available.</p>}
+            {!options.length && <p className="text-xs text-neutral-500">No cinemas are currently available.</p>}
           </fieldset>
 
           {error && <p role="alert" className="rounded-lg border border-red-400/20 bg-red-400/[0.06] px-3 py-2 text-xs text-red-200">{error}</p>}
