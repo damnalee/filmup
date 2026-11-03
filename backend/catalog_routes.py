@@ -41,6 +41,11 @@ def title_key(title: str) -> str:
 
 def database_rows(query):
     try:
+        if supabase is None:
+            raise HTTPException(
+                status_code=503,
+                detail="Backend database credentials are not configured.",
+            )
         response = query.execute()
         return response.data or []
     except Exception as exc:

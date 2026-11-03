@@ -183,6 +183,7 @@ async def root():
 
 
 @app.get("/health")
+@app.get("/api/health")
 async def health():
     job = (
         scheduler.get_job("hourly_lahore_cinema_scrape")
