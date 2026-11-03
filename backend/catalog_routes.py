@@ -39,13 +39,17 @@ def title_key(title: str) -> str:
     return " ".join(re.sub(r"[^a-z0-9]+", " ", title.lower()).split())
 
 
+def require_database():
+    if supabase is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Backend database credentials are not configured.",
+        )
+
+
 def database_rows(query):
     try:
-        if supabase is None:
-            raise HTTPException(
-                status_code=503,
-                detail="Backend database credentials are not configured.",
-            )
+        require_database()
         response = query.execute()
         return response.data or []
     except Exception as exc:
@@ -56,6 +60,7 @@ def database_rows(query):
 
 
 def load_upcoming_showtimes():
+    require_database()
     now = datetime.now(timezone.utc)
 
     rows = database_rows(
@@ -170,6 +175,7 @@ def list_movies(
     limit: int = Query(default=100, ge=1, le=1000),
 ):
     """List catalogue entries, independently enriched with actual future sessions."""
+    require_database()
     if status is not None and status not in ALLOWED_STATUSES:
         raise HTTPException(
             status_code=400,
@@ -220,6 +226,7 @@ def list_showtimes(
     limit: int = Query(default=2000, ge=1, le=5000),
 ):
     """Return future source showtime rows for the shared browser-side data adapter."""
+    require_database()
     now = datetime.now(timezone.utc)
     rows = database_rows(
         supabase.table("showtimes")
@@ -234,6 +241,7 @@ def list_showtimes(
 @router.get("/api/movies/{movie_id}")
 def get_movie(movie_id: str):
     """Get one catalogue entry, its release information, and confirmed future sessions."""
+    require_database()
     catalog = database_rows(
         supabase.table("movie_catalog")
         .select(CATALOG_FIELDS)
