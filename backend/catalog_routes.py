@@ -162,7 +162,7 @@ def enrich_movie(movie, grouped_showtimes):
 def list_movies(
     status: str | None = None,
     q: str | None = None,
-    limit: int = Query(default=100, ge=1, le=500),
+    limit: int = Query(default=100, ge=1, le=1000),
 ):
     """List catalogue entries, independently enriched with actual future sessions."""
     if status is not None and status not in ALLOWED_STATUSES:
