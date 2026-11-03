@@ -132,6 +132,8 @@ async def lifespan(app: FastAPI):
 
 
 from catalog_routes import router as catalog_router
+from database import SUPABASE_CONFIGURED
+
 app = FastAPI(
     title="FilmUp API",
     version="1.0.0",
@@ -189,7 +191,8 @@ async def health():
     )
 
     return {
-        "status": "ok",
+        "status": "ok" if SUPABASE_CONFIGURED else "degraded",
+        "database_configured": SUPABASE_CONFIGURED,
         "current_time": datetime.now(APP_TIMEZONE).isoformat(),
         "timezone": TIMEZONE_NAME,
         "scraper_enabled": SCRAPER_ENABLED,

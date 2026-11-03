@@ -28,20 +28,20 @@ DB_COLUMNS = (
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip()
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "").strip()
 
-if (
-    not SUPABASE_URL
-    or not SUPABASE_KEY
-    or "your-project-id" in SUPABASE_URL
-    or "your_private_backend_key" in SUPABASE_KEY
-    or "your-project-id" in SUPABASE_URL
-):
-    raise RuntimeError(
-        "Supabase credentials are missing or still placeholders. "
-        "Set SUPABASE_URL and SUPABASE_KEY in your local .env file."
-    )
+SUPABASE_CONFIGURED = bool(
+    SUPABASE_URL
+    and SUPABASE_KEY
+    and "your-project-id" not in SUPABASE_URL
+    and "your_private_backend_key" not in SUPABASE_KEY
+)
 
-# Reuse one client across database operations.
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Build the app even when credentials are not configured; database routes report
+# the missing dependency clearly instead of crashing every backend invocation.
+supabase: Client | None = (
+    create_client(SUPABASE_URL, SUPABASE_KEY)
+    if SUPABASE_CONFIGURED
+    else None
+)
 
 
 def _deduplicate_batch(rows: list[dict]) -> list[dict]:
