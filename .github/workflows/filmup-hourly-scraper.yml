@@ -2,7 +2,6 @@ name: FilmUp hourly cinema scraper
 
 on:
   schedule:
-    # GitHub Actions uses Asia/Karachi local time; run five minutes after each hour.
     - cron: '5 * * * *'
       timezone: 'Asia/Karachi'
   workflow_dispatch:
@@ -33,14 +32,12 @@ jobs:
       - name: Install backend dependencies
         run: python -m pip install -r backend/requirements.txt
 
-      - name: Run monitored scraper and advance-booking check
+      - name: Run monitored scraper
         working-directory: backend
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API }}
-          MAIL_FROM_EMAIL: ${{ secrets.MAIL_FROM }}
-          MAIL_FROM_NAME: FilmUp Notifications
           TIMEZONE: Asia/Karachi
           SCRAPER_MONITOR_STORAGE: supabase
+          SCRAPER_TRIGGER: github_actions_hourly
         run: python scraper.py

@@ -3747,4 +3747,4 @@ refresh_new_cinema_sources = cinestar_dha_refresh_new_cinema_sources
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     from scraper_monitoring import run_monitored_scrape
-    asyncio.run(run_monitored_scrape(run_scrape_job, trigger="manual_cli"))
+    asyncio.run(run_monitored_scrape(run_scrape_job, trigger=os.getenv("SCRAPER_TRIGGER", "manual_cli")))
