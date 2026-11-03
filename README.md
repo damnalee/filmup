@@ -70,15 +70,12 @@ The screenshots were captured on 30 October 2026. Movie catalogues, release info
 
 ```mermaid
 flowchart LR
-    U[Visitor] --> FE[React + Vite on Cloudflare Pages]
-    FE --> API[TypeScript API on Cloudflare Workers]
+    U[Visitor] --> FE[React + Vite]
+    FE --> API[FastAPI]
     API --> DB[(Supabase PostgreSQL)]
-    CRON[Cloudflare Cron Triggers] --> DISPATCH[GitHub Actions dispatch]
-    DISPATCH --> SCR[Existing Python cinema scraper]
-    DISPATCH --> CHECK[Five-minute booking check · dry run]
-    SCR --> DB
-    CHECK --> DB
+    API --> SCR[Python cinema scraper]
     API --> MAIL[Resend transactional email]
+    SCR --> DB
 ```
 
 The frontend and backend are maintained in one repository. The React app is at the repository root; the Python API is in `backend/`.
@@ -90,7 +87,7 @@ The frontend and backend are maintained in one repository. The React app is at t
 | Frontend | React 19, TypeScript, Vite 8, Tailwind CSS 4 |
 | Map | MapLibre GL, React Map GL, Supercluster |
 | UI motion | Framer Motion |
-| API edge | TypeScript Cloudflare Worker; full FastAPI backend remains available locally |
+| API | FastAPI backend |
 | Data | Supabase (PostgreSQL) |
 | Collection | Python, HTTPX/aiohttp, BeautifulSoup, GitHub Actions runner |
 | AI assistant service | Groq SDK (backend endpoint; separate from the map UI) |
@@ -191,7 +188,7 @@ The catalogue API is the source of truth for movie/showtime data. The frontend i
 
 FilmUp is an actively developed project. Cinema websites can change their markup or APIs, and a source may temporarily fail or publish incomplete information. Treat the cinema's own booking page as authoritative before travelling or purchasing tickets.
 
-The Cloudflare Worker dispatches scheduled Python jobs to GitHub Actions. The five-minute advance-booking checker defaults to dry-run mode and does not send booking alerts until live delivery is explicitly enabled. The full FastAPI backend can also run locally, but do not run its in-process scheduler alongside the Cloudflare/GitHub schedule.
+The FastAPI backend runs its scraper and advance-booking scheduler when `SCRAPER_ENABLED=true`. Run scheduled work in only one deployment so jobs are not duplicated.
 
 The scraper monitoring endpoint (`/api/monitoring/scraper`) exposes operational run history. Put it behind administrator authentication or an access-controlled gateway before exposing a deployed backend publicly.
 

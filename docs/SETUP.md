@@ -113,7 +113,7 @@ VITE_API_PROXY_TARGET=http://127.0.0.1:8000
 - `VITE_CINEMA_API_URL` is the API base path used by browser requests.
 - `VITE_API_PROXY_TARGET` is read by Vite's local development proxy only.
 - For local development, leave the API base as `/api`; Vite forwards it to FastAPI.
-- For a separately hosted frontend, set `VITE_CINEMA_API_URL` to the public API origin plus `/api`. The Cloudflare Worker uses `CORS_ALLOWED_ORIGINS` in `cloudflare/worker/wrangler.jsonc`; a separately hosted FastAPI backend uses the backend environment variable.
+- For a separately hosted frontend, set `VITE_CINEMA_API_URL` to the public API origin plus `/api`. A separately hosted FastAPI backend uses `CORS_ALLOWED_ORIGINS` from its backend environment.
 
 Open `http://127.0.0.1:5173`.
 

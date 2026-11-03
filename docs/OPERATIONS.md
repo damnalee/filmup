@@ -8,18 +8,9 @@
 - Scraper history: `GET /api/monitoring/scraper` with the administrator bearer token.
 - Local FastAPI health: `GET /health`; interactive OpenAPI is available at `/docs`.
 
-The Cloudflare Worker health response confirms the edge is responding; it does not prove that Supabase, GitHub Actions, every cinema collector or Resend is healthy.
-
 ## Scheduled work
 
-The deployed Worker owns two Cron Triggers and dispatches jobs to GitHub Actions:
-
-- `5 * * * *` (UTC): hourly Python cinema refresh.
-- `*/5 * * * *` (UTC): advance-booking availability check.
-
-The booking-check workflow defaults to `ADVANCE_BOOKING_DRY_RUN=true`. It logs matching slots but does not send booking alerts or update `notified_cinemas`. Live delivery must be explicitly enabled in `.github/workflows/cloudflare-jobs.yml` after the Resend sender and recipient behavior have been tested.
-
-The full FastAPI backend can also start an in-process APScheduler when `SCRAPER_ENABLED=true`. Do not run that scheduler at the same time as the Cloudflare/GitHub schedule.
+The FastAPI backend starts APScheduler when `SCRAPER_ENABLED=true`. Run scheduled work in only one deployment so scraper and booking jobs are not duplicated.
 
 ## Manual scrape
 
@@ -57,8 +48,8 @@ Local `scrape_output/` data, reconciliation backups, CSV exports and logs are in
 
 ## Incident response
 
-- API unavailable: inspect Cloudflare Worker logs, configuration and Supabase connectivity.
-- Catalogue stale: inspect Cron Trigger dispatches, GitHub Actions runs, source collectors and last audit artifacts.
+- API unavailable: inspect FastAPI logs, configuration and Supabase connectivity.
+- Catalogue stale: inspect scheduled jobs, source collectors and last audit artifacts.
 - Email failure: verify Resend credentials, sender authorization and provider logs.
 - Duplicate alerts: inspect subscription status and `notified_cinemas` before editing records.
 - Incorrect cinema mapping: verify `location_guard.py`, `src/data/cinemas.json` and the source cinema name normalization before changing data.

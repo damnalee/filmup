@@ -1,8 +1,7 @@
 /*
  * Single boundary for cinema data.
- * - VITE_CINEMA_API_URL points to FilmUp's API base, e.g. /api or
- *   https://filmup-api.<workers-subdomain>.workers.dev/api.
- * - Supports FastAPI wrapped responses and raw PostgREST arrays from the Cloudflare Worker.
+ * - VITE_CINEMA_API_URL points to FilmUp's API base, e.g. /api.
+ * - Supports FastAPI wrapped responses and raw PostgREST arrays.
  * - There is deliberately no demo-data fallback.
  */
 import type { Area, Cinema, Movie, RawCinemaData, RawShowtime } from '../types'
@@ -184,7 +183,7 @@ export function createCinemaApiSource(baseUrl: string): CinemaDataSource {
         throw new Error('Cinema API returned an unexpected response. Expected movie and showtime arrays.')
       }
 
-      // Cloudflare returns raw PostgREST arrays; local FastAPI wraps them in {movies}/{showtimes}.
+      // FastAPI wraps catalogue data while preserving the existing API response shape.
       const showtimesByTitle = new Map<string, ApiShowtime[]>()
       for (const row of sharedShowtimes) {
         if (!row?.movie_title?.trim()) continue
