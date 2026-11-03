@@ -11,6 +11,16 @@
       "entrypoint": "main.py"
     }
   },
+  "crons": [
+    {
+      "path": "/api/jobs/scrape",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/jobs/advance-booking",
+      "schedule": "*/5 * * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",

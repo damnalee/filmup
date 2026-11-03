@@ -1,5 +1,7 @@
+import asyncio
 import logging
 import os
+import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
@@ -10,7 +12,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -25,7 +27,9 @@ TIMEZONE_NAME = os.getenv("TIMEZONE", "Asia/Karachi").strip()
 APP_TIMEZONE = ZoneInfo(TIMEZONE_NAME)
 
 SCRAPER_ENABLED = (
-    os.getenv("SCRAPER_ENABLED", "true").strip().lower()
+    os.getenv("SCRAPER_ENABLED", "false" if os.getenv("VERCEL") else "true")
+    .strip()
+    .lower()
     in {"1", "true", "yes", "on"}
 )
 SCRAPER_SCHEDULE_MINUTE = int(
@@ -206,6 +210,27 @@ async def health():
             else None
         ),
     }
+
+
+def _authorize_cron(request: Request) -> None:
+    cron_secret = os.getenv("CRON_SECRET", "").strip()
+    authorization = request.headers.get("authorization", "")
+    if not cron_secret or not secrets.compare_digest(authorization, f"Bearer {cron_secret}"):
+        raise HTTPException(status_code=401, detail="Unauthorized cron request.")
+
+
+@app.get("/api/jobs/scrape")
+async def run_vercel_scrape(request: Request):
+    _authorize_cron(request)
+    await run_monitored_scrape(run_scrape_job, trigger="vercel_cron")
+    return {"ok": True, "job": "scrape"}
+
+
+@app.get("/api/jobs/advance-booking")
+async def run_vercel_advance_booking(request: Request):
+    _authorize_cron(request)
+    notified = await asyncio.to_thread(check_advance_booking_notifications)
+    return {"ok": True, "job": "advance_booking", "notified": notified}
 
 
 @app.get("/api/monitoring/scraper")
