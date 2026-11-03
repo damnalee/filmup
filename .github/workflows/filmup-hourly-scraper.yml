@@ -1,0 +1,46 @@
+name: FilmUp hourly cinema scraper
+
+on:
+  schedule:
+    # GitHub Actions uses Asia/Karachi local time; run five minutes after each hour.
+    - cron: '5 * * * *'
+      timezone: 'Asia/Karachi'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: filmup-hourly-scraper
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    name: Refresh cinema showtimes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Check out FilmUp
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend dependencies
+        run: python -m pip install -r backend/requirements.txt
+
+      - name: Run monitored scraper and advance-booking check
+        working-directory: backend
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API }}
+          MAIL_FROM_EMAIL: ${{ secrets.MAIL_FROM }}
+          MAIL_FROM_NAME: FilmUp Notifications
+          TIMEZONE: Asia/Karachi
+          SCRAPER_MONITOR_STORAGE: supabase
+        run: python scraper.py
