@@ -13,7 +13,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
-from database import supabase
+from database import SUPABASE_CONFIGURED, supabase
 from email_service import resend_config, send_resend_email
 
 logger = logging.getLogger(__name__)
@@ -265,6 +265,11 @@ def check_advance_booking_notifications(
     Cloud jobs default to dry-run mode. Dry runs never send mail or mark cinemas
     notified; live delivery requires an explicit deployment opt-in.
     """
+    if not SUPABASE_CONFIGURED or supabase is None:
+        raise RuntimeError(
+            "SUPABASE_URL and SUPABASE_KEY must be configured before advance-booking jobs run."
+        )
+
     query = (
         supabase.table("advance_booking_subscriptions")
         .select("id,email,movie_title,cinema_names,notified_cinemas")

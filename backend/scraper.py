@@ -96,7 +96,12 @@ PK_TZ = ZoneInfo(SCRAPER_CONFIG["timezone"])
 REQUEST_TIMEOUT = SCRAPER_CONFIG["request_timeout_seconds"]
 MAX_CONCURRENCY = SCRAPER_CONFIG["max_concurrency"]
 
-OUTPUT_DIR = Path("scrape_output")
+OUTPUT_DIR = (
+    Path("/tmp/filmup/scrape_output")
+    if os.getenv("VERCEL")
+    else Path("scrape_output")
+)
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 RAW_CSV = OUTPUT_DIR / "showtimes_raw.csv"
 DEDUPED_CSV = OUTPUT_DIR / "showtimes_deduplicated.csv"
 

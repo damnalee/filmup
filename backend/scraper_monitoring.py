@@ -18,9 +18,13 @@ from pathlib import Path
 from typing import Any, Awaitable, Callable
 
 BASE_DIR = Path(__file__).resolve().parent
-DEFAULT_DB_PATH = BASE_DIR / "scrape_output" / "monitoring.sqlite3"
+if os.getenv("VERCEL"):
+    DEFAULT_OUTPUT_DIR = Path("/tmp/filmup/scrape_output")
+else:
+    DEFAULT_OUTPUT_DIR = BASE_DIR / "scrape_output"
+DEFAULT_DB_PATH = DEFAULT_OUTPUT_DIR / "monitoring.sqlite3"
 DB_PATH = Path(os.getenv("SCRAPER_MONITOR_DB_PATH", str(DEFAULT_DB_PATH))).expanduser()
-AUDIT_DIR = BASE_DIR / "scrape_output" / "showtime_audits"
+AUDIT_DIR = Path(os.getenv("SCRAPER_AUDIT_DIR", str(DEFAULT_OUTPUT_DIR / "showtime_audits"))).expanduser()
 logger = logging.getLogger(__name__)
 
 SNAPSHOT_RE = re.compile(r"^\[(?P<label>.+?)\] Snapshot status=(?P<status>[^,]+), rows=(?P<rows>\d+)\.")

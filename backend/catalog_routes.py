@@ -52,6 +52,8 @@ def database_rows(query):
         require_database()
         response = query.execute()
         return response.data or []
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(
             status_code=502,

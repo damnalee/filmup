@@ -12,7 +12,8 @@ from dotenv import load_dotenv
 from supabase import Client, create_client
 from location_guard import filter_lahore_showtimes
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(BASE_DIR / ".env")
 
 logger = logging.getLogger(__name__)
 PK_TZ = ZoneInfo("Asia/Karachi")
@@ -26,22 +27,27 @@ DB_COLUMNS = (
 )
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip()
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "").strip()
+SUPABASE_KEY = (
+    os.getenv("SUPABASE_KEY")
+    or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    or ""
+).strip()
 
-SUPABASE_CONFIGURED = bool(
-    SUPABASE_URL
-    and SUPABASE_KEY
-    and "your-project-id" not in SUPABASE_URL
-    and "your_private_backend_key" not in SUPABASE_KEY
-)
+if not SUPABASE_URL or "your-project-id" in SUPABASE_URL:
+    raise RuntimeError("SUPABASE_URL is missing or still a placeholder.")
+if not SUPABASE_KEY or "your_private_backend_key" in SUPABASE_KEY:
+    raise RuntimeError(
+        "SUPABASE_KEY (or SUPABASE_SERVICE_ROLE_KEY) is missing or still a placeholder."
+    )
+if not SUPABASE_URL.startswith(("https://", "http://")):
+    raise RuntimeError("SUPABASE_URL must be an absolute HTTP(S) URL.")
 
-# Build the app even when credentials are not configured; database routes report
-# the missing dependency clearly instead of crashing every backend invocation.
-supabase: Client | None = (
-    create_client(SUPABASE_URL, SUPABASE_KEY)
-    if SUPABASE_CONFIGURED
-    else None
-)
+try:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+except Exception as exc:
+    raise RuntimeError(f"Supabase client initialization failed: {exc}") from exc
+
+SUPABASE_CONFIGURED = True
 
 
 def _deduplicate_batch(rows: list[dict]) -> list[dict]:
