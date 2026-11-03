@@ -212,7 +212,7 @@ async def scraper_monitoring(limit: int = 20):
     return get_monitoring_snapshot(limit=limit)
 
 
-@app.post("/chat")
+@app.post("/api/chat")
 async def chat(request: ChatRequest):
     try:
         answer = await chat_with_cinema(
