@@ -55,6 +55,46 @@ def _cinema_key(value: str) -> str:
     return "".join(re.findall(r"[a-z0-9]+", (value or "").casefold()))
 
 
+def _slot_key(row: dict) -> str | None:
+    """Return a stable UTC-microsecond key for one cinema showtime."""
+    raw = str(row.get("showtime") or "").strip()
+    if not raw:
+        return None
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        delta = parsed.astimezone(timezone.utc) - datetime(1970, 1, 1, tzinfo=timezone.utc)
+        return str(
+            delta.days * 86_400_000_000
+            + delta.seconds * 1_000_000
+            + delta.microseconds
+        )
+    except (ValueError, TypeError, OverflowError):
+        return None
+
+
+def _new_slots_by_cinema(
+    rows: list[dict],
+    selected_cinemas: list[str],
+    notified_slots: dict,
+) -> dict[str, list[dict]]:
+    """Keep only selected-cinema showtimes not previously included in an alert."""
+    selected_keys = {_cinema_key(name): name for name in selected_cinemas}
+    newly_available: dict[str, list[dict]] = {}
+    for row in rows:
+        cinema_key = _cinema_key(str(row.get("cinema_name") or "").strip())
+        selected_name = selected_keys.get(cinema_key)
+        slot_key = _slot_key(row)
+        if not selected_name or slot_key is None:
+            continue
+        seen = set(notified_slots.get(cinema_key) or [])
+        if slot_key in seen:
+            continue
+        newly_available.setdefault(selected_name, []).append(row)
+    return newly_available
+
+
 def _page(title: str, message: str, success: bool = True) -> HTMLResponse:
     safe_title = html.escape(title)
     safe_message = html.escape(message)
@@ -174,6 +214,7 @@ def subscribe_to_advance_booking(payload: AdvanceBookingSubscriptionRequest, req
         "movie_title": movie_title,
         "cinema_names": cinema_names,
         "notified_cinemas": [],
+        "notified_slots": {},
         "confirmation_token": token,
         "status": "pending",
         "expires_at": expires_at,
@@ -260,10 +301,11 @@ def check_advance_booking_notifications(
     *,
     dry_run: bool | None = None,
 ) -> int:
-    """Detect new selected-cinema slots and optionally send one alert per cinema.
+    """Detect newly appearing selected-cinema showtimes and email only unseen slots.
 
     Live email delivery is opt-in through ADVANCE_BOOKING_EMAIL_ENABLED=true.
-    Dry runs never send mail or mark cinemas notified.
+    Dry runs never send mail or mark slots notified. A subscription remains eligible
+    after its first alert so later showtimes at the same cinema can trigger follow-ups.
     """
     if dry_run is None:
         dry_run = os.getenv("ADVANCE_BOOKING_EMAIL_ENABLED", "false").strip().lower() not in {
@@ -276,8 +318,8 @@ def check_advance_booking_notifications(
 
     query = (
         supabase.table("advance_booking_subscriptions")
-        .select("id,email,movie_title,cinema_names,notified_cinemas")
-        .eq("status", "confirmed")
+        .select("id,email,movie_title,cinema_names,notified_cinemas,notified_slots")
+        .in_("status", ["confirmed", "notified"])
     )
     if subscription_id:
         query = query.eq("id", subscription_id)
@@ -296,6 +338,7 @@ def check_advance_booking_notifications(
         movie_title = str(subscription.get("movie_title") or "").strip()
         selected = subscription.get("cinema_names") or []
         already_notified = set(subscription.get("notified_cinemas") or [])
+        already_notified_slots = subscription.get("notified_slots") or {}
         if not movie_title or not selected:
             continue
 
@@ -315,16 +358,15 @@ def check_advance_booking_notifications(
             logger.exception("Could not check showtimes for one advance-booking subscription.")
             continue
 
-        selected_keys = {_cinema_key(name): name for name in selected}
-        newly_available: dict[str, list[dict]] = {}
-        for row in rows:
-            if _title_key(str(row.get("movie_title") or "")) != _title_key(movie_title):
-                continue
-            actual_cinema = str(row.get("cinema_name") or "").strip()
-            selected_name = selected_keys.get(_cinema_key(actual_cinema))
-            if not selected_name or selected_name in already_notified:
-                continue
-            newly_available.setdefault(selected_name, []).append(row)
+        matching_movie_rows = [
+            row for row in rows
+            if _title_key(str(row.get("movie_title") or "")) == _title_key(movie_title)
+        ]
+        newly_available = _new_slots_by_cinema(
+            matching_movie_rows,
+            selected,
+            already_notified_slots,
+        )
 
         if not newly_available:
             no_match_count += 1
@@ -345,10 +387,20 @@ def check_advance_booking_notifications(
             continue
 
         updated_notified = sorted(already_notified.union(newly_available.keys()))
+        updated_slots = {
+            str(cinema_key): list(dict.fromkeys(str(slot) for slot in slots))
+            for cinema_key, slots in already_notified_slots.items()
+        }
+        for cinema_name, new_rows in newly_available.items():
+            cinema_key = _cinema_key(cinema_name)
+            known = set(updated_slots.get(cinema_key) or [])
+            known.update(slot for slot in (_slot_key(row) for row in new_rows) if slot)
+            updated_slots[cinema_key] = sorted(known)
         all_notified = set(updated_notified) >= set(selected)
         try:
             supabase.table("advance_booking_subscriptions").update({
                 "notified_cinemas": updated_notified,
+                "notified_slots": updated_slots,
                 "status": "notified" if all_notified else "confirmed",
                 "last_notified_at": now.isoformat(),
             }).eq("id", subscription["id"]).execute()

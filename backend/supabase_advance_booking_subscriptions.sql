@@ -7,6 +7,7 @@ create table if not exists public.advance_booking_subscriptions (
     movie_title text not null,
     cinema_names text[] not null,
     notified_cinemas text[] not null default '{}',
+    notified_slots jsonb not null default '{}'::jsonb,
     confirmation_token text not null unique,
     status text not null default 'pending'
         check (status in ('pending', 'confirmed', 'notified', 'expired')),
