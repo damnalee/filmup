@@ -37,8 +37,9 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API }}
-          MAIL_FROM_EMAIL: ${{ secrets.MAIL_FROM }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY || secrets.RESEND_API }}
+          MAIL_FROM_EMAIL: ${{ secrets.MAIL_FROM_EMAIL || secrets.MAIL_FROM }}
           MAIL_FROM_NAME: FilmUp Notifications
+          ADVANCE_BOOKING_EMAIL_ENABLED: "true"
           TIMEZONE: Asia/Karachi
         run: python run_advance_booking_check.py

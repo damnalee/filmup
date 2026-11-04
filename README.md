@@ -91,7 +91,7 @@ The frontend and backend are maintained in one repository. The React app is at t
 | Data | Supabase (PostgreSQL) |
 | Collection | Python, HTTPX/aiohttp, BeautifulSoup, GitHub Actions runner |
 | AI assistant service | Groq SDK (backend endpoint; separate from the map UI) |
-| Email | Resend HTTPS API for subscription confirmation; scheduled booking alerts default to dry-run |
+| Email | Resend HTTPS API for subscription confirmation and scheduled booking alerts (explicitly enabled in GitHub Actions) |
 
 ## Quick start
 

@@ -258,13 +258,17 @@ def confirm_advance_booking(token: str):
 def check_advance_booking_notifications(
     subscription_id: str | None = None,
     *,
-    dry_run: bool = False,
+    dry_run: bool | None = None,
 ) -> int:
     """Detect new selected-cinema slots and optionally send one alert per cinema.
 
-    Cloud jobs default to dry-run mode. Dry runs never send mail or mark cinemas
-    notified; live delivery requires an explicit deployment opt-in.
+    Live email delivery is opt-in through ADVANCE_BOOKING_EMAIL_ENABLED=true.
+    Dry runs never send mail or mark cinemas notified.
     """
+    if dry_run is None:
+        dry_run = os.getenv("ADVANCE_BOOKING_EMAIL_ENABLED", "false").strip().lower() not in {
+            "1", "true", "yes", "on"
+        }
     if not SUPABASE_CONFIGURED or supabase is None:
         raise RuntimeError(
             "SUPABASE_URL and SUPABASE_KEY must be configured before advance-booking jobs run."
@@ -278,9 +282,15 @@ def check_advance_booking_notifications(
     if subscription_id:
         query = query.eq("id", subscription_id)
     subscriptions = query.limit(500).execute().data or []
+    if not dry_run:
+        # Fail before processing subscriptions if live delivery is misconfigured.
+        _email_config()
     now = datetime.now(timezone.utc)
+    checked_count = len(subscriptions)
     sent_count = 0
     detected_count = 0
+    no_match_count = 0
+    failed_count = 0
 
     for subscription in subscriptions:
         movie_title = str(subscription.get("movie_title") or "").strip()
@@ -301,7 +311,8 @@ def check_advance_booking_notifications(
                 .data or []
             )
         except Exception:
-            logger.exception("Could not check showtimes for subscription %s.", subscription.get("id"))
+            failed_count += 1
+            logger.exception("Could not check showtimes for one advance-booking subscription.")
             continue
 
         selected_keys = {_cinema_key(name): name for name in selected}
@@ -316,22 +327,21 @@ def check_advance_booking_notifications(
             newly_available.setdefault(selected_name, []).append(row)
 
         if not newly_available:
+            no_match_count += 1
             continue
 
+        detected_count += 1
         if dry_run:
-            detected_count += 1
-            logger.info(
-                "DRY RUN: booking slots detected for %s at %s; email delivery is not configured yet.",
-                movie_title,
-                ", ".join(sorted(newly_available)),
-            )
+            logger.info("DRY RUN: new matching booking slots detected for one subscription.")
             continue
 
         subject, plain, body = _booking_email(movie_title, newly_available)
         try:
             _send_email(str(subscription["email"]), subject, plain, body)
+            sent_count += 1
         except Exception:
-            logger.exception("Booking alert email failed for subscription %s.", subscription.get("id"))
+            failed_count += 1
+            logger.exception("Booking alert email failed for one advance-booking subscription.")
             continue
 
         updated_notified = sorted(already_notified.union(newly_available.keys()))
@@ -342,13 +352,21 @@ def check_advance_booking_notifications(
                 "status": "notified" if all_notified else "confirmed",
                 "last_notified_at": now.isoformat(),
             }).eq("id", subscription["id"]).execute()
-            sent_count += 1
-            logger.info(
-                "Sent advance-booking alert for %s to %s at %s.",
-                movie_title, subscription.get("email"), ", ".join(newly_available),
-            )
+            logger.info("Resend accepted one advance-booking alert; subscription state updated.")
         except Exception:
             # Email was sent; log loudly so a failed state update can be reconciled.
-            logger.exception("Alert sent but subscription state update failed for %s.", subscription.get("id"))
+            failed_count += 1
+            logger.exception("Alert was sent but subscription state update failed.")
 
+    logger.info(
+        "Advance-booking check summary: mode=%s confirmed_subscriptions=%d "
+        "subscriptions_without_new_slots=%d subscriptions_with_new_slots=%d "
+        "alerts_sent=%d failures=%d.",
+        "dry-run" if dry_run else "live",
+        checked_count,
+        no_match_count,
+        detected_count,
+        sent_count,
+        failed_count,
+    )
     return detected_count if dry_run else sent_count

@@ -29,7 +29,7 @@ Run only one scraper process at a time. A scrape can modify live Supabase catalo
 2. API sends a Resend confirmation email and stores a pending record.
 3. User opens the tokenized confirmation URL before expiry.
 4. The API changes the subscription to confirmed.
-5. The scheduled checker looks for matching future showtimes. In the current safe default, it only logs detections; after live delivery is explicitly enabled, it sends an alert and records that cinema in `notified_cinemas`.
+5. The scheduled checker looks for matching future showtimes. It sends alerts only when `ADVANCE_BOOKING_EMAIL_ENABLED=true`; otherwise it logs detections without sending mail or marking cinemas notified. The GitHub Actions booking workflow explicitly enables live delivery.
 
 If a user reports no confirmation email, check that `RESEND_API_KEY` is configured, `MAIL_FROM_EMAIL` is allowed by Resend, and the provider accepted the request. The `onboarding@resend.dev` test sender is restricted to the account's registered email; verify a domain for other recipients. Check Resend email logs and the recipient's inbox/spam folder. An accepted API request is not proof of inbox delivery.
 
@@ -40,7 +40,7 @@ If a user reports no booking alert, check in order:
 - Does Supabase contain a future showtime for the selected cinema?
 - Did the scraper successfully refresh that source?
 - Did the GitHub Actions checker run?
-- Is the workflow still in dry-run mode? If live mode is enabled, did Resend accept the message?
+- Is `ADVANCE_BOOKING_EMAIL_ENABLED=true` in the checker environment? Did Resend accept the message? Check the privacy-safe run summary for confirmed subscription count, matching openings, sends and failures.
 
 ## Operational data
 

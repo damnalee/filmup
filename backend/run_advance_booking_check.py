@@ -9,7 +9,7 @@ from advance_booking_routes import check_advance_booking_notifications
 def main() -> int:
     # Keep Actions logs free of recipient addresses and subscription details.
     logging.basicConfig(
-        level=logging.WARNING,
+        level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
     sent_count = check_advance_booking_notifications()

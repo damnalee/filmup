@@ -73,6 +73,7 @@ Fill in `backend/.env`:
 | `RESEND_API_KEY` | For email | Resend API key; keep secret |
 | `MAIL_FROM_EMAIL` | For email | Sender address allowed by Resend; the test sender is restricted to your Resend account email |
 | `MAIL_FROM_NAME` | Optional | Sender display name |
+| `ADVANCE_BOOKING_EMAIL_ENABLED` | Optional | Set to `true` to send live advance-booking alerts; defaults to dry-run/off |
 | `SCRAPER_ENABLED` | Optional | Enables scheduler when `true` |
 | `SCRAPER_SCHEDULE_MINUTE` | Optional | Minute within the configured hour; default `5` |
 | `SCRAPER_INTERVAL_HOURS` | Optional | Hour cadence; default `1` |
