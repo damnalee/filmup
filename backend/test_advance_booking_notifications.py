@@ -1,7 +1,7 @@
 """Tests for FilmUp's per-showtime advance-booking alert tracking."""
 
 import unittest
-from advance_booking_routes import _new_slots_by_cinema, _slot_key
+from advance_booking_slot_tracking import _new_slots_by_cinema, _slot_key
 
 
 class AdvanceBookingSlotTrackingTests(unittest.TestCase):
